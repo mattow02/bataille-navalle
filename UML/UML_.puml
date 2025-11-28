@@ -1,0 +1,474 @@
+@startuml batailleNaval
+skinparam style strictuml
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+top to bottom direction
+
+package View {
+
+  interface GameView {
+    + display(): void
+    + update(data: Object): void
+    + showMessage(message: String): void
+  }
+
+  class ConfigurationView implements GameView {
+    - gridSizeComboBox: ComboBox
+    - boatTypeCheckboxes: List<Checkbox>
+    - islandModeToggle: ToggleButton
+    - startButton: Button
+
+    + display(): void
+    + update(configData: Object): void
+    + showGridSizeOptions(): void
+    + showBoatSelection(): void
+    + showIslandModeOption(): void
+  }
+
+  class PlacementView implements GameView {
+    - gridPanel: GridPanel
+    - boatListPanel: BoatListPanel
+    - rotateButton: Button
+    - randomPlaceButton: Button
+    - validateButton: Button
+
+    + display(): void
+    + update(placementData: Object): void
+    + highlightCell(x: int, y: int): void
+    + showBoatPlacement(boat: Boat, positions: List<Coordinates>): void
+    + showPlacementError(error: String): void
+  }
+
+  class BattleView implements GameView {
+    - playerGrid: BattleGrid
+    - enemyGrid: BattleGrid
+    - weaponSelector: WeaponSelector
+    - infoPanel: InfoPanel
+    - logArea: TextArea
+
+    + display(): void
+    + update(gameState: Object): void
+    + markHit(x: int, y: int): void
+    + markMiss(x: int, y: int): void
+    + markSunk(positions: List<Coordinates>): void
+    + updateTurnInfo(turn: int): void
+  }
+
+  class EndGameView implements GameView {
+    - winnerLabel: Label
+    - statsPanel: StatsPanel
+    - restartButton: Button
+    - exitButton: Button
+
+    + display(): void
+    + update(endData: Object): void
+    + showWinner(winnerName: String): void
+    + showStatistics(stats: Map<String, Integer>): void
+  }
+
+  class BattleGrid {
+    - cells: GridCell[][]
+    + setCellState(x: int, y: int, state: CellState): void
+    + addCellClickListener(listener: ActionListener): void
+  }
+
+  class GridCell {
+    - state: CellState
+    - button: Button
+    + setState(state: CellState): void
+    + setEnabled(enabled: boolean): void
+  }
+
+  enum CellState {
+    WATER
+    BOAT
+    HIT
+    MISS
+    SUNK
+    ISLAND
+    EXPLORED
+  }
+
+  class WeaponSelector {
+    - weapons: List<WeaponItem>
+    - selectedWeapon: WeaponType
+    + setAvailableWeapons(weapons: List<WeaponType>): void
+    + getSelectedWeapon(): WeaponType
+  }
+
+  class InfoPanel {
+    - turnLabel: Label
+    - playerStatsLabel: Label
+    - enemyStatsLabel: Label
+    + updateTurn(turnNumber: int): void
+    + updatePlayerStats(stats: String): void
+    + updateEnemyStats(stats: String): void
+  }
+  ConfigurationView *-- ComboBox
+  PlacementView *-- GridPanel
+  BattleView *-- BattleGrid
+  BattleView *-- WeaponSelector
+  BattleView *-- InfoPanel
+  BattleGrid *-- GridCell
+  EndGameView *-- StatsPanel
+}
+
+package Controller {
+
+  interface Observer {
+    + update(event: Object)
+  }
+
+  class GameController implements Observer {
+    - game: Game
+    - currentView: GameView
+    + startApplication(): void
+    + handleConfigurationComplete(config: GameConfig): void
+    + handlePlacementComplete(): void
+    + handlePlayerAttack(coord: Coordinates, weapon: Weapon): void
+    + handleGameOver(winner: Player): void
+    + update(event: Object)  ' ← AJOUTER
+  }
+
+  class ConfigurationController implements Observer {
+    - config: GameConfig
+    + handleGridSizeSelected(size: int): void
+    + handleBoatSelected(boatType: BoatType, count: int): void
+    + handleStartGame(): void
+    + update(event: Object)  ' ← AJOUTER
+  }
+
+  class PlacementController implements Observer {
+    - player: HumanPlayer
+    + handleBoatPlaced(boat: Boat, coord: Coordinates, orientation: Orientation): void
+    + handleRandomPlacement(): void
+    + handleStartBattle(): void
+    + update(event: Object)  ' ← AJOUTER
+  }
+
+  class BattleController implements Observer {
+    - game: Game
+    + handleWeaponSelected(weapon: Weapon): void
+    + handleCellClicked(coord: Coordinates): void
+    + executeComputerTurn(): void
+    + update(event: Object)  ' ← AJOUTER
+  }
+
+  GameController *-- ConfigurationController
+  GameController *-- PlacementController
+  GameController *-- BattleController
+}
+package Model {
+
+
+interface GridEntity <<interface>> {
+    + handleImpact(attacker: Player, coordinates: Coordinates) : HitOutcome
+    + entityType(): String
+    + size(): Integer
+}
+
+class Coordinates {
+    - row: Integer
+    - column: Integer
+    + Coordinates(row: Integer, column: Integer)
+    + equals(Object): boolean
+    + toString(): String
+    + offsetBy(dRow: Integer, dCol: Integer): Coordinates
+}
+
+enum HitOutcome <<enumerate>> {
+    MISS
+    HIT
+    SUNK
+    TRAP_TRIGGERED
+    ACQUIRED_WEAPON
+    INVALID
+}
+
+package Map{
+    class Grid{
+        - size: Integer
+        - cells: GridCell[][]
+
+
+        + Grid(size: Integer)
+        + placeEntity(entity: GridEntity, coordinates: List<Coordinates>): boolean
+        + cellAt(coordinates: Coordinates): GridCell
+        + exploreIslandAt(coordinates: Coordinates): HitOutcome
+    }
+
+    class GridCell{
+        - isHit: boolean
+        - entity: GridEntity
+        - indexInEntity: Integer
+
+        + GridCell(entity: GridEntity, indexInEntity: Integer)
+        + strike(attacker: Player): HitOutcome
+        + isOccupied(): boolean
+    }
+
+    Grid "1" *-- "*" GridCell
+    GridCell "1" o-- "0..1" GridEntity
+    Grid .down.> Coordinates : <<use>>
+    Grid .down.> GridEntity : <<use>>
+}
+
+package Boat{
+    enum BoatType <<enumerate>> {
+        AIRCRAFT_CARRIER
+        CRUISER
+        DESTROYER
+        SUBMARINE
+        TORPEDO
+    }
+
+    interface BoatFactory <<interface>>{
+        + create(BoatType): Boat
+    }
+
+    class SimpleBoatFactory implements BoatFactory{
+        + create(BoatType): Boat
+    }
+
+    interface Boat <<interface>> extends Model.GridEntity {
+        + isSunk(): boolean
+        + receiveHit(index: Integer): HitOutcome
+        + size(): Integer
+        + name(): String
+    }
+
+    class Submarine implements Boat{
+        - size: Integer
+        - hits: boolean[]
+
+        + Submarine()
+        + isSunk(): boolean
+        + receiveHit(index: Integer): HitOutcome
+        + size(): Integer
+        + name(): String
+    }
+
+    class Torpedo implements Boat{
+        - size: Integer
+        - hits: boolean[]
+
+        + Torpedo()
+        + isSunk(): boolean
+        + receiveHit(index: Integer): HitOutcome
+        + size(): Integer
+        + name(): String
+    }
+
+    class Destroyer implements Boat{
+        - size: Integer
+        - hits: boolean[]
+
+        + Destroyer()
+        + isSunk(): boolean
+        + receiveHit(index: Integer): HitOutcome
+        + size(): Integer
+        + name(): String
+    }
+
+    class Cruiser implements Boat{
+        - size: Integer
+        - hits: boolean[]
+
+        + Cruiser()
+        + isSunk(): boolean
+        + receiveHit(index: Integer): HitOutcome
+        + size(): Integer
+        + name(): String
+    }
+
+    class AircraftCarrier implements Boat{
+        - size: Integer
+        - hits: boolean[]
+
+        + AircraftCarrier()
+        + isSunk(): boolean
+        + receiveHit(index: Integer): HitOutcome
+        + size(): Integer
+        + name(): String
+    }
+
+    BoatFactory ..> Boat : create
+    SimpleBoatFactory ..> Boat : create
+    BoatFactory .up.> BoatType : <<use>>
+}
+
+package Player{
+
+    abstract class Player <<abstract>>{
+        + isDefeated(): boolean
+        + fire(coordinates: Coordinates, weapon: Weapon): HitOutcome
+        + handleIncomingFire(coordinates: Coordinates, weapon: Weapon): HitOutcome
+    }
+
+    class HumanPlayer extends Player {
+        - name: String
+        - ownGrid: Map.Grid
+        - targetGrid: Map.Grid
+        - availableWeapons: List<Weapon>
+        - traps: List<Model.GridEntity>
+
+        + HumanPlayer(name: String, ownGrid: Grid, targetGrid: Grid)
+        + fire(coordinates: Coordinates, weapon: Weapon): HitOutcome
+        + handleIncomingFire(coordinates: Coordinates, weapon: Weapon): HitOutcome
+        + isDefeated(): boolean
+    }
+
+    class ComputerPlayer extends Player {
+        - ownGrid: Grid
+        - targetGrid: Grid
+        - shotStrategy: ShotStrategy
+
+        + ComputerPlayer(ownGrid: Grid, targetGrid: Grid)
+        + chooseNextShot(): Coordinates
+        + isDefeated(): boolean
+        + fire(coordinates: Coordinates, weapon: Weapon): HitOutcome
+        + handleIncomingFire(coordinates: Coordinates, weapon: Weapon): HitOutcome
+    }
+
+    interface ShotStrategy <<interface>> {
+        + getNextShot(targetGrid: Grid, lastOutcome: HitOutcome): Coordinates
+    }
+
+    class RandomShotStrategy implements ShotStrategy {}
+    class TargetedShotStrategy implements ShotStrategy {}
+
+    ComputerPlayer "1" *-- "1" ShotStrategy
+}
+
+package Weapon{
+    interface Weapon <<interface>> {
+        + execute(targetPlayer: Player, targetCoordinates: Coordinates): HitOutcome
+        + weaponName(): String
+        + usesLeft(): Integer
+    }
+
+    class Bombe implements Weapon{
+        - usesLeft: Integer
+        + Bombe()
+        + execute(targetPlayer: Player, targetCoordinates: Coordinates): HitOutcome
+        + weaponName(): String
+        + usesLeft(): Integer
+        + consume()
+    }
+
+    class Sonar implements Weapon{
+        - usesLeft: Integer
+        + Sonar()
+        + execute(targetPlayer: Player, targetCoordinates: Coordinates): HitOutcome
+        + weaponName(): String
+        + usesLeft(): Integer
+        + consume()
+    }
+
+    Weapon .up.> Player.Player : <<use>>
+    Weapon .up.> Coordinates : <<use>>
+}
+
+package Trap{
+    class BlackHole implements Model.GridEntity{
+        - size: Integer
+        + BlackHole()
+        + handleImpact(attacker: Player, coordinates: Coordinates): HitOutcome
+        + entityType(): String
+        + size(): Integer
+    }
+
+    class Tornado implements Model.GridEntity{
+        - size: Integer
+        - remainingTurns: Integer
+
+        + Tornado()
+        + handleImpact(attacker: Player, coordinates: Coordinates): HitOutcome
+        + modifyShotCoordinates(coordinates: Coordinates): Coordinates
+        + entityType(): String
+        + size(): Integer
+    }
+}
+
+package Island{
+    interface IslandItem <<interface>>{
+        + onDiscover(player: Player): HitOutcome
+    }
+
+    class IslandEmpty implements IslandItem{
+        + IslandEmpty()
+        + onDiscover(player: Player): HitOutcome
+    }
+
+    class BombItem implements IslandItem{
+        + BombItem()
+        + onDiscover(player: Player): HitOutcome
+    }
+
+    class SonarItem implements IslandItem{
+        + SonarItem()
+        + onDiscover(player: Player): HitOutcome
+    }
+}
+
+package Game{
+    class GameConfiguration{
+        - gridSize: Integer
+        - boatCounts: Map<BoatType, Integer>
+        - islandMode: boolean
+        - numSpecialItems: Integer
+        - computerShotLevel: Integer
+        - placementLevel: Integer
+
+        + GameConfiguration(...)
+    }
+
+    class Game{
+        - human: Player.HumanPlayer
+        - computer: Player.ComputerPlayer
+        - config: GameConfiguration
+        - turnNumber: Integer
+
+        + Game(config: GameConfiguration, human: HumanPlayer, computer: ComputerPlayer)
+        + start()
+        + executeHumanTurn(coordinates: Coordinates, weapon: Weapon): HitOutcome
+        + executeComputerTurn(): HitOutcome
+        + isGameOver(): boolean
+        + restart(config: GameConfiguration)
+        + advanceTurn()
+    }
+
+    Game "1" *-- "1" GameConfiguration
+    Game "1" *-- "1" HumanPlayer
+    Game "1" *-- "1" ComputerPlayer
+}
+
+HumanPlayer o-- Weapon
+HumanPlayer o-- Trap.BlackHole
+ComputerPlayer o-- Weapon
+ComputerPlayer o-- Trap.BlackHole
+GameController --> Game
+ConfigurationController --> GameConfiguration
+PlacementController --> HumanPlayer
+PlacementController --> Boat
+PlacementController --> Coordinates
+PlacementController --> Orientation
+BattleController --> Game
+BattleController --> Weapon
+BattleController --> Coordinates
+BattleController --> Player
+ConfigurationController --> BoatType
+ConfigurationView --> ConfigurationController
+PlacementView --> PlacementController
+BattleView --> BattleController
+EndGameView --> GameController
+
+GameController --> GameView
+
+
+
+
+}
+@enduml

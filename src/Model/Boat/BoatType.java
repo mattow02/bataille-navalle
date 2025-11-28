@@ -1,0 +1,20 @@
+package Model.Boat;
+
+public enum BoatType {
+    AIRCRAFT_CARRIER(5, "Porte-avions"),
+    CRUISER(4, "Croiseur"),
+    DESTROYER(3, "Contre-torpilleur"),
+    SUBMARINE(3, "Sous-marin"),
+    TORPEDO(2, "Torpilleur");
+
+    private int size;
+    private String name;
+
+    BoatType(int size, String name) {
+        this.size = size;
+        this.name = name;
+    }
+
+    public int getSize() { return size; }
+    public String getName() { return name; }
+}
