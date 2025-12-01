@@ -24,7 +24,19 @@ public class Grid {
         }
     }
 
-    // NOUVELLE MÉTHODE : Placer un bateau
+    // Marque une zone 4x4 comme île (pour le mode île)
+    public void markIslandZone(int startRow, int startCol) {
+        for (int r = startRow; r < startRow + 4; r++) {
+            for (int c = startCol; c < startCol + 4; c++) {
+                Coordinates coord = new Coordinates(r, c);
+                if (coord.isValid(size)) {
+                    cells[r][c].setIsIslandCell(true);
+                }
+            }
+        }
+    }
+
+    // Place un bateau sur la grille avec vérifications (hors île, cases libres)
     public boolean placeBoat(Boat boat, Coordinates startCoord, Orientation orientation) {
         List<Coordinates> positions = calculateBoatPositions(boat, startCoord, orientation);
 
@@ -32,16 +44,37 @@ public class Grid {
             return false;
         }
 
-        //  TOUTES LES CELLULES DOIVENT AVOIR LA MÊME INSTANCE DE BATEAU
+        for (Coordinates coord : positions) {
+            if (cells[coord.getRow()][coord.getColumn()].isIslandCell()) {
+                return false;
+            }
+        }
+
         for (int i = 0; i < positions.size(); i++) {
             Coordinates coord = positions.get(i);
-            cells[coord.getRow()][coord.getColumn()].setEntity(boat); // Même instance !
+            GridCell cell = cells[coord.getRow()][coord.getColumn()];
+
+            cell.setEntity(boat);
+            cell.setBoatSegmentIndex(i);
         }
 
         return true;
     }
 
-    //  Calculer les positions occupées par le bateau
+    // Vérifie que toutes les positions sont valides et libres
+    private boolean isValidPlacement(List<Coordinates> positions) {
+        for (Coordinates coord : positions) {
+            if (!coord.isValid(size)) {
+                return false;
+            }
+            if (cells[coord.getRow()][coord.getColumn()].isOccupied()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Calcule toutes les positions occupées par le bateau selon son orientation
     private List<Coordinates> calculateBoatPositions(Boat boat, Coordinates start, Orientation orientation) {
         List<Coordinates> positions = new ArrayList<>();
         int boatSize = boat.size();
@@ -52,7 +85,7 @@ public class Grid {
 
             if (orientation == Orientation.HORIZONTAL) {
                 col += i;
-            } else { // VERTICAL
+            } else {
                 row += i;
             }
 
@@ -62,22 +95,8 @@ public class Grid {
         return positions;
     }
 
-    //  Vérifier si le placement est valide
-    private boolean isValidPlacement(List<Coordinates> positions) {
-        for (Coordinates coord : positions) {
-            // Vérifier si dans la grille
-            if (!coord.isValid(size)) {
-                return false;
-            }
-            // Vérifier si la case est déjà occupée
-            if (cells[coord.getRow()][coord.getColumn()].isOccupied()) {
-                return false;
-            }
-        }
-        return true;
-    }
 
-    // Méthodes existantes...
+
     public GridCell getCell(Coordinates coord) {
         if (coord.isValid(size)) {
             return cells[coord.getRow()][coord.getColumn()];

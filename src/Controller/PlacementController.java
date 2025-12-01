@@ -1,62 +1,139 @@
 package Controller;
 
 import Model.Boat.Boat;
+import Model.Boat.BoatFactory;
+import Model.Boat.BoatType;
+import Model.Boat.SimpleBoatFactory;
 import Model.Coordinates;
+import Model.GameConfiguration;
+import Model.GridEntity;
+import Model.Map.Grid;
 import Model.Orientation;
+import View.CellState;
+
+import javax.swing.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 public class PlacementController implements Observer {
     private GameController mainController;
-    private List<Boat> boatsToPlace;
-    private List<Boat> placedBoats;
+    private Grid playerGrid;
+    // File d'attente des bateaux et pièges à placer
+    private Queue<GridEntity> itemsToPlace;
+    private GridEntity currentItem;
 
-    public PlacementController(GameController mainController, List<Boat> boatsToPlace) {
+    private Orientation currentOrientation;
+    private View.PlacementView view;
+
+    public PlacementController(GameController mainController) {
         this.mainController = mainController;
-        this.boatsToPlace = new ArrayList<>(boatsToPlace);
-        this.placedBoats = new ArrayList<>();
+        this.playerGrid = mainController.getPlayerGrid();
+        this.currentOrientation = Orientation.HORIZONTAL;
+        this.itemsToPlace = new LinkedList<>();
     }
 
-    public void handleBoatPlaced(Boat boat, Coordinates startCoord, Orientation orientation) {
-        System.out.println(" Placement manuel: " + boat.name() + " en " + startCoord + " " + orientation);
+    public void setView(View.PlacementView view) {
+        this.view = view;
+    }
 
-        // Vérifier si le placement est valide
-        if (mainController.getPlayerGrid().placeBoat(boat, startCoord, orientation)) {
-            placedBoats.add(boat);
-            System.out.println(boat.name() + " placé avec succès");
+    // Initialise la file de placement avec tous les bateaux et pièges
+    public void initializeBoats(GameConfiguration config) {
+        BoatFactory factory = new SimpleBoatFactory();
+        itemsToPlace.clear();
+
+        // Ajoute tous les bateaux selon la configuration
+        for (Map.Entry<BoatType, Integer> entry : config.getBoatCounts().entrySet()) {
+            for (int i = 0; i < entry.getValue(); i++) {
+                itemsToPlace.add(factory.create(entry.getKey()));
+            }
+        }
+
+        // En mode standard, ajoute les pièges à placer
+        if (!config.isIslandMode()) {
+            itemsToPlace.add(new Model.Trap.BlackHole());
+            itemsToPlace.add(new Model.Trap.Tornado());
+        }
+
+        nextItem();
+    }
+
+    private void nextItem() {
+        currentItem = itemsToPlace.poll();
+
+        if (currentItem == null) {
+            finishPlacement();
         } else {
-            System.out.println(" Placement invalide pour " + boat.name());
-            // Notifier la vue de l'erreur
+            notifyObservers("UPDATE_PLACEMENT");
         }
     }
 
-    public void handleRandomPlacement(Boat boat) {
+    // Gère le clic sur la grille : place le bateau ou piège courant
+    public void handleGridClick(int row, int col) {
+        if (currentItem == null) return;
 
+        Coordinates coord = new Coordinates(row, col);
+        boolean success = false;
 
-        boolean placed = mainController.placeBoatRandomly(boat, mainController.getPlayerGrid());
-        if (placed) {
-            placedBoats.add(boat);
-            System.out.println( boat.name() + " placé aléatoirement");
+        // Placement différent selon le type (bateau multi-cases ou piège 1 case)
+        if (currentItem instanceof Boat) {
+            success = playerGrid.placeBoat((Boat) currentItem, coord, currentOrientation);
         } else {
-            System.out.println(" Échec placement aléatoire pour " + boat.name());
+            Model.Map.GridCell cell = playerGrid.getCell(coord);
+            if (cell != null && !cell.isOccupied() && !cell.isIslandCell()) {
+                cell.setEntity(currentItem);
+                success = true;
+            }
+        }
+
+        if (success) {
+            notifyObservers("UPDATE_PLACEMENT");
+            nextItem();
+        } else {
+            notifyObservers("INVALID_PLACEMENT");
         }
     }
 
-    public void handleStartBattle() {
-        if (isPlacementComplete()) {
-
-            mainController.showBattleView();
-        } else {
-            System.out.println(" Placement incomplet !");
-        }
+    private void finishPlacement() {
+        currentItem = null;
+        JOptionPane.showMessageDialog(null, "Flotte et Pièges prêts ! La bataille commence...", "Déploiement terminé", JOptionPane.INFORMATION_MESSAGE);
+        startGame();
     }
 
-    public boolean isPlacementComplete() {
-        return placedBoats.size() == boatsToPlace.size() + placedBoats.size();
+    public void toggleOrientation() {
+        currentOrientation = (currentOrientation == Orientation.HORIZONTAL)
+                ? Orientation.VERTICAL : Orientation.HORIZONTAL;
+        notifyObservers("UPDATE_PLACEMENT");
     }
 
-    @Override
-    public void update(Object event) {
-        // Gérer les événements de placement
+    public void startGame() {
+        if (view != null) view.close();
+        mainController.showBattleView();
     }
+
+    public CellState getCellState(int row, int col) {
+        return mainController.getPlayerCellState(row, col);
+    }
+
+    public String getCurrentItemName() {
+        if (currentItem == null) return "";
+        if (currentItem instanceof Boat) return ((Boat) currentItem).name();
+        if (currentItem instanceof Model.Trap.BlackHole) return "Trou Noir (Piège)";
+        if (currentItem instanceof Model.Trap.Tornado) return "Tornade (Piège)";
+        return "Objet Inconnu";
+    }
+
+    public int getCurrentItemSize() {
+        return currentItem != null ? currentItem.size() : 0;
+    }
+
+    public Orientation getOrientation() { return currentOrientation; }
+    public int getGridSize() { return playerGrid.getSize(); }
+
+    private List<Observer> observers = new ArrayList<>();
+    public void addObserver(Observer o) { observers.add(o); }
+    private void notifyObservers(String msg) { for(Observer o : observers) o.update(msg); }
+    @Override public void update(Object event) {}
 }

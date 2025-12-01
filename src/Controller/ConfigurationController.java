@@ -1,7 +1,7 @@
 package Controller;
 
 import Model.Boat.BoatType;
-import Model.Game.GameConfiguration;
+import Model.GameConfiguration;
 import java.util.Map;
 
 public class ConfigurationController implements Observer {
@@ -11,19 +11,14 @@ public class ConfigurationController implements Observer {
         this.mainController = mainController;
     }
 
-    public void handleConfigurationComplete(Map<BoatType, Integer> boatCounts) {
-        for (Map.Entry<BoatType, Integer> entry : boatCounts.entrySet()) {
-            System.out.println("  - " + entry.getKey().getName() + ": " + entry.getValue());
-        }
-
-        // Créer la configuration (autres valeurs par défaut pour l'instant)
+    public void handleConfigurationComplete(Map<BoatType, Integer> boatCounts, boolean isIslandMode) {
         GameConfiguration config = new GameConfiguration(
-                10, // Taille grille
+                10,
                 boatCounts,
-                false, // Mode île
-                0,     // Items spéciaux
-                1,     // Niveau IA
-                1      // Niveau placement
+                isIslandMode,
+                0,
+                1,
+                1
         );
 
         mainController.handleConfigurationComplete(config);
@@ -31,6 +26,5 @@ public class ConfigurationController implements Observer {
 
     @Override
     public void update(Object event) {
-        // Gérer les événements de configuration
     }
 }

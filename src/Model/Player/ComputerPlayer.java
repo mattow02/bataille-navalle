@@ -5,17 +5,16 @@ import Model.Coordinates;
 import Model.HitOutcome;
 
 public class ComputerPlayer extends Player {
+    // Stratégie de tir intelligente (ciblée autour des touches)
     private ShotStrategy shotStrategy;
 
     public ComputerPlayer(Grid ownGrid, Grid targetGrid) {
         super(ownGrid, targetGrid);
-        this.shotStrategy = new TargetedShotStrategy(); //  Stratégie intelligente
+        this.shotStrategy = new TargetedShotStrategy();
     }
-
 
     @Override
     public HitOutcome fire(Coordinates coordinates) {
-        System.out.println(" IA tire en " + coordinates);
         return targetGrid.getCell(coordinates).strike(this);
     }
 
@@ -24,12 +23,11 @@ public class ComputerPlayer extends Player {
         return ownGrid.getCell(coordinates).strike(null);
     }
 
-    //  MÉTHODE UNIQUE : Choix du tir avec mémoire du dernier résultat
+    // Choisit la prochaine cible selon le résultat du dernier tir
     public Coordinates chooseNextShot(HitOutcome lastOutcome) {
         return shotStrategy.getNextShot(targetGrid, lastOutcome);
     }
 
-    // GETTER pour la stratégie
     public ShotStrategy getShotStrategy() {
         return shotStrategy;
     }

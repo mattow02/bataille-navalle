@@ -15,32 +15,24 @@ public class Submarine implements Boat {
         this.sunk = false;
     }
 
+    @Override
     public HitOutcome handleImpact(Player attacker, Coordinates coordinates) {
-
-        for (int i = 0; i < size; i++) {
-            if (!hits[i]) {
-                System.out.println("🎯 Première case non touchée trouvée: " + i);
-                return receiveHit(i);
-            }
-        }
-
-        // Si toutes les cases sont touchées, on touche la première
-        System.out.println("Toutes les cases déjà touchées, on touche la première");
-        return receiveHit(0);
+        return HitOutcome.INVALID;
     }
+
+    @Override
     public boolean isSunk() {
         return sunk;
     }
 
+    @Override
     public HitOutcome receiveHit(int index) {
         if (index < 0 || index >= size) {
             return HitOutcome.INVALID;
         }
 
-        //  MARQUER COMME TOUCHÉ
         hits[index] = true;
 
-        // VÉRIFIER SI LE BATEAU EST COULÉ
         sunk = true;
         for (boolean hit : hits) {
             if (!hit) {
@@ -49,28 +41,29 @@ public class Submarine implements Boat {
             }
         }
 
-        //  RETOURNER LE BON RÉSULTAT
         if (sunk) {
-            System.out.println("🔥 " + name() + " COULÉ !");
             return HitOutcome.SUNK;
         } else {
-            System.out.println("✅ " + name() + " touché à la position " + index);
             return HitOutcome.HIT;
         }
     }
 
+    @Override
     public String entityType() {
         return "BOAT";
     }
 
+    @Override
     public int size() {
         return size;
     }
 
+    @Override
     public String name() {
         return "Sous-Marin";
     }
 
+    @Override
     public BoatType getType() {
         return BoatType.SUBMARINE;
     }

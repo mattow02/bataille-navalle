@@ -5,42 +5,38 @@ import Model.HitOutcome;
 import Model.Player.Player;
 
 public class Cruiser implements Boat {
-    private int size;
+    private final int size = 4;
     private boolean[] hits;
     private boolean sunk;
 
     public Cruiser() {
-        this.size = 4;
         this.hits = new boolean[size];
         this.sunk = false;
     }
+
+    @Override
     public HitOutcome handleImpact(Player attacker, Coordinates coordinates) {
-
-        for (int i = 0; i < size; i++) {
-            if (!hits[i]) {
-                System.out.println(" Première case non touchée trouvée: " + i);
-                return receiveHit(i);
-            }
-        }
-
-        // Si toutes les cases sont touchées, on touche la première
-        System.out.println(" Toutes les cases déjà touchées, on touche la première");
-        return receiveHit(0);
+        return HitOutcome.INVALID;
     }
 
+    @Override
+    public String entityType() {
+        return "";
+    }
+
+    @Override
     public boolean isSunk() {
         return sunk;
     }
 
+    @Override
     public HitOutcome receiveHit(int index) {
-        if (index < 0 || index >= size) {
+        if (index < 0 || index >= size || hits[index]) {
             return HitOutcome.INVALID;
         }
 
-        //  MARQUER COMME TOUCHÉ
         hits[index] = true;
 
-        //  VÉRIFIER SI LE BATEAU EST COULÉ
         sunk = true;
         for (boolean hit : hits) {
             if (!hit) {
@@ -49,27 +45,24 @@ public class Cruiser implements Boat {
             }
         }
 
-        //  RETOURNER LE BON RÉSULTAT
         if (sunk) {
-            System.out.println( name() + " COULÉ !");
             return HitOutcome.SUNK;
         } else {
-            System.out.println(name() + " touché à la position " + index);
             return HitOutcome.HIT;
         }
     }
-    public String entityType() {
-        return "BOAT";
-    }
 
+    @Override
     public int size() {
         return size;
     }
 
+    @Override
     public String name() {
-        return "Croiseur";
+        return BoatType.CRUISER.getName();
     }
 
+    @Override
     public BoatType getType() {
         return BoatType.CRUISER;
     }

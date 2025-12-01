@@ -3,6 +3,7 @@ package Model.Player;
 import Model.Map.Grid;
 import Model.Coordinates;
 import Model.HitOutcome;
+import Model.Boat.Boat;
 
 public abstract class Player {
     protected Grid ownGrid;
@@ -29,13 +30,15 @@ public abstract class Player {
                 Model.Map.GridCell cell = ownGrid.getCell(coord);
 
                 if (cell != null && cell.isOccupied()) {
-                    Model.Boat.Boat boat = (Model.Boat.Boat) cell.getEntity();
-                    if (!boat.isSunk()) {
-                        return false; // Au moins un bateau n'est pas coulé
+                    if (cell.getEntity() instanceof Boat) {
+                        Boat boat = (Boat) cell.getEntity();
+                        if (!boat.isSunk()) {
+                            return false;
+                        }
                     }
                 }
             }
         }
-        return true; // Tous les bateaux sont coulés
+        return true;
     }
 }

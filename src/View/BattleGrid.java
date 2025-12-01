@@ -1,6 +1,8 @@
 package View;
 
 import Controller.GameController;
+import Model.Coordinates;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -11,9 +13,8 @@ public class BattleGrid {
     private GridCell[][] gridCells;
     private int gridSize;
     private GameController controller;
-    private boolean isPlayerGrid; //  TRUE = grille joueur, FALSE = grille ennemie
+    private boolean isPlayerGrid;
 
-    //  NOUVEAU CONSTRUCTEUR avec type de grille
     public BattleGrid(int gridSize, GameController controller, boolean isPlayerGrid) {
         this.gridSize = gridSize;
         this.controller = controller;
@@ -31,7 +32,6 @@ public class BattleGrid {
     private JPanel createGridWithCoordinates() {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
-        // COORDONNÉES EN HAUT
         JPanel topCoordinates = new JPanel(new GridLayout(1, gridSize + 1));
         topCoordinates.setBackground(Color.WHITE);
         topCoordinates.add(new JLabel(""));
@@ -44,7 +44,6 @@ public class BattleGrid {
         }
         mainPanel.add(topCoordinates, BorderLayout.NORTH);
 
-        // COORDONNÉES À GAUCHE
         JPanel leftCoordinates = new JPanel(new GridLayout(gridSize, 1));
         leftCoordinates.setBackground(Color.WHITE);
 
@@ -56,7 +55,6 @@ public class BattleGrid {
             leftCoordinates.add(coordLabel);
         }
 
-        // GRILLE CENTRALE
         JPanel gridContainer = new JPanel(new GridLayout(gridSize, gridSize, 1, 1));
         gridContainer.setBackground(Color.BLACK);
 
@@ -64,18 +62,14 @@ public class BattleGrid {
             for (int col = 0; col < gridSize; col++) {
                 GridCell gridCell = new GridCell();
 
-                //  ÉTAT INITIAL DIFFÉRENT SELON LE TYPE DE GRILLE
                 CellState initialState;
                 if (isPlayerGrid) {
-                    // Grille joueur : bateaux visibles
                     initialState = controller.getPlayerCellState(row, col);
                 } else {
-                    // Grille ennemie : toujours eau (bateaux cachés)
                     initialState = controller.getEnemyCellState(row, col);
                 }
                 gridCell.setState(initialState);
 
-                // AJOUTER LISTENER UNIQUEMENT SUR GRILLE ENNEMIE
                 if (!isPlayerGrid) {
                     addClickListener(gridCell, row, col);
                 }
@@ -85,7 +79,6 @@ public class BattleGrid {
             }
         }
 
-        // ASSEMBLAGE
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.add(leftCoordinates, BorderLayout.WEST);
         centerPanel.add(gridContainer, BorderLayout.CENTER);
@@ -98,21 +91,14 @@ public class BattleGrid {
         gridCell.getCellPanel().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                System.out.println(" Clic sur case ennemie (" + row + "," + col + ")");
                 handleCellClick(row, col);
             }
         });
     }
 
     private void handleCellClick(int row, int col) {
-        char letter = (char)('A' + row);
-        int number = col + 1;
-        System.out.println(" Tir ennemi en " + letter + number);
-
-        // Controller gère la logique métier
         controller.getBattleController().handlePlayerAttack(row, col);
 
-        // Mettre à jour l'affichage de la case ennemie
         CellState newState = controller.getEnemyCellStateAfterAttack(row, col);
         gridCells[row][col].setState(newState);
     }
@@ -121,37 +107,37 @@ public class BattleGrid {
         return gridPanel;
     }
 
+
     public void refreshGrid() {
-
-
         for (int row = 0; row < gridSize; row++) {
             for (int col = 0; col < gridSize; col++) {
                 GridCell gridCell = gridCells[row][col];
 
-                //  FORCER LA MISE À JOUR DE TOUTES LES CASES
                 CellState currentState;
                 if (isPlayerGrid) {
                     currentState = controller.getPlayerCellState(row, col);
+
+                    if (currentState == CellState.WATER) {
+                        Coordinates coord = new Coordinates(row, col);
+                        Model.Map.GridCell modelCell = controller.getPlayerGrid().getCell(coord);
+
+                        if (modelCell != null && modelCell.isIslandCell() && !modelCell.isHit()) {
+                            currentState = CellState.ISLAND;
+                        }
+                    }
+
                 } else {
                     currentState = controller.getEnemyCellState(row, col);
                 }
 
-                //  TOUJOURS METTRE À JOUR, MÊME SI L'ÉTAT N'A PAS CHANGÉ
                 gridCell.setState(currentState);
-
-                //  DEBUG : Afficher les cases de bateaux coulés
-                if (currentState == CellState.SUNK) {
-
-                }
             }
         }
 
-        //  FORCER LE RAFRAÎCHISSEMENT VISUEL
         if (gridPanel != null) {
             gridPanel.revalidate();
             gridPanel.repaint();
         }
     }
-
 
 }

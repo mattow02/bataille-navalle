@@ -1,4 +1,4 @@
-package Model.Game;
+package Model.Games;
 
 import Model.Coordinates;
 
@@ -6,11 +6,9 @@ public class Game {
     private boolean gameOver = false;
 
     public void executeHumanTurn(Coordinates coord) {
-        System.out.println("Joueur attaque: " + coord);
     }
 
     public void executeComputerTurn() {
-        System.out.println("Ordinateur joue son tour");
     }
 
     public boolean isGameOver() {

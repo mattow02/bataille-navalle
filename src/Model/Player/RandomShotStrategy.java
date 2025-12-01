@@ -10,7 +10,6 @@ public class RandomShotStrategy implements ShotStrategy {
         int gridSize = targetGrid.getSize();
         int row, col;
 
-        // Trouver une case non touchée
         int attempts = 0;
         do {
             row = (int) (Math.random() * gridSize);

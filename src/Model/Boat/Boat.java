@@ -8,5 +8,5 @@ public interface Boat extends GridEntity {
     HitOutcome receiveHit(int index);
     int size();
     String name();
-    BoatType getType();  // ← AJOUTER CETTE MÉTHODE
+    BoatType getType();
 }

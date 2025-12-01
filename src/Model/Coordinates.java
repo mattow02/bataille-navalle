@@ -1,5 +1,7 @@
 package Model;
 
+import java.util.Objects;
+
 public class Coordinates {
     private final int row;
     private final int column;
@@ -19,5 +21,18 @@ public class Coordinates {
 
     public boolean isValid(int gridSize) {
         return row >= 0 && row < gridSize && column >= 0 && column < gridSize;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Coordinates that = (Coordinates) o;
+        return row == that.row && column == that.column;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(row, column);
     }
 }

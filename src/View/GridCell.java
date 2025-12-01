@@ -6,9 +6,10 @@ import java.awt.*;
 public class GridCell {
     private JPanel cellPanel;
     private CellState state;
+    private CellState currentState;
 
     public GridCell() {
-        this.state = CellState.WATER; // Par défaut, eau
+        this.state = CellState.WATER;
         createCell();
     }
 
@@ -19,10 +20,6 @@ public class GridCell {
         updateAppearance();
     }
 
-    public void setState(CellState newState) {
-        this.state = newState;
-        updateAppearance();
-    }
 
     private void updateAppearance() {
         switch(state) {
@@ -52,5 +49,47 @@ public class GridCell {
 
     public CellState getState() {
         return state;
+    }
+
+    public void setState(CellState state) {
+        this.currentState = state;
+        Color color;
+
+        switch (state) {
+            case WATER:
+                color = Color.BLUE;
+                break;
+            case BOAT:
+                color = Color.LIGHT_GRAY;
+                break;
+            case HIT:
+                color = Color.RED;
+                break;
+            case MISS:
+                color = Color.WHITE;
+                break;
+            case SUNK:
+                color = Color.BLACK;
+                break;
+            case ISLAND:
+                color = new Color(139, 69, 19);
+                break;
+            case EXPLORED:
+                color = new Color(220, 220, 220);
+                break;
+            case ITEM_FOUND:
+                color = Color.YELLOW;
+                break;
+            default:
+                color = Color.MAGENTA;
+                break;
+            case TRAP:
+                color = Color.MAGENTA;
+                break;
+        }
+
+        if (cellPanel != null) {
+            cellPanel.setBackground(color);
+        }
     }
 }

@@ -14,32 +14,19 @@ public class AircraftCarrier implements Boat {
         this.hits = new boolean[size];
         this.sunk = false;
     }
+
+    @Override
     public HitOutcome handleImpact(Player attacker, Coordinates coordinates) {
-
-        for (int i = 0; i < size; i++) {
-            if (!hits[i]) {
-                System.out.println(" Première case non touchée trouvée: " + i);
-                return receiveHit(i);
-            }
-        }
-
-        // Si toutes les cases sont touchées, on touche la première
-        System.out.println(" Toutes les cases déjà touchées, on touche la première");
-        return receiveHit(0);
+        return HitOutcome.INVALID;
     }
 
-    private int calculateHitIndex(Coordinates coordinates) {
-        if (coordinates == null) return 0;
-
-
-        return coordinates.getColumn() - 2; // 2 = colonne de départ
-    }
+    @Override
     public boolean isSunk() {
         return sunk;
     }
 
+    @Override
     public HitOutcome receiveHit(int index) {
-
         if (index < 0 || index >= size) {
             return HitOutcome.INVALID;
         }
@@ -55,25 +42,30 @@ public class AircraftCarrier implements Boat {
         }
 
         if (sunk) {
-
             return HitOutcome.SUNK;
         } else {
             return HitOutcome.HIT;
         }
     }
+
+    @Override
     public String entityType() {
         return "BOAT";
     }
 
+    @Override
     public int size() {
         return size;
     }
 
+    @Override
     public String name() {
         return "Porte-avions";
     }
 
+    @Override
     public BoatType getType() {
         return BoatType.AIRCRAFT_CARRIER;
     }
+
 }
