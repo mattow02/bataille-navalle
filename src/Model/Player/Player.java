@@ -16,22 +16,19 @@ public abstract class Player {
 
     public abstract boolean isDefeated();
     public abstract HitOutcome fire(Coordinates coordinates);
-    public abstract HitOutcome handleIncomingFire(Coordinates coordinates);
 
     public Grid getOwnGrid() { return ownGrid; }
-    public Grid getTargetGrid() { return targetGrid; }
 
     protected boolean areAllBoatsSunk() {
         int gridSize = ownGrid.getSize();
 
         for (int row = 0; row < gridSize; row++) {
             for (int col = 0; col < gridSize; col++) {
-                Coordinates coord = new Coordinates(row, col);
-                Model.Map.GridCell cell = ownGrid.getCell(coord);
+                Coordinates cord = new Coordinates(row, col);
+                Model.Map.GridCell cell = ownGrid.getCell(cord);
 
                 if (cell != null && cell.isOccupied()) {
-                    if (cell.getEntity() instanceof Boat) {
-                        Boat boat = (Boat) cell.getEntity();
+                    if (cell.getEntity() instanceof Boat boat) {
                         if (!boat.isSunk()) {
                             return false;
                         }
@@ -40,5 +37,27 @@ public abstract class Player {
             }
         }
         return true;
+    }
+
+    public int getAliveBoatsCount() {
+        java.util.Set<Model.Boat.Boat> uniqueBoats = new java.util.HashSet<>();
+        int size = ownGrid.getSize();
+
+        for (int r = 0; r < size; r++) {
+            for (int c = 0; c < size; c++) {
+                Model.Map.GridCell cell = ownGrid.getCell(new Model.Coordinates(r, c));
+                if (cell.isOccupied() && cell.getEntity() instanceof Model.Boat.Boat) {
+                    uniqueBoats.add((Model.Boat.Boat) cell.getEntity());
+                }
+            }
+        }
+
+        int aliveCount = 0;
+        for (Model.Boat.Boat boat : uniqueBoats) {
+            if (!boat.isSunk()) {
+                aliveCount++;
+            }
+        }
+        return aliveCount;
     }
 }

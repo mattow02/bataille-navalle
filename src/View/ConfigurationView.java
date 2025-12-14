@@ -8,10 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ConfigurationView implements GameView {
-    private ConfigurationController controller;
+    private final ConfigurationController controller;
     private JFrame frame;
-    private Map<BoatType, JSpinner> boatSpinners;
+    private final Map<BoatType, JSpinner> boatSpinners;
     private JCheckBox islandModeCheckBox;
+    private JCheckBox easyModeCheckBox;
 
     public ConfigurationView(ConfigurationController controller) {
         this.controller = controller;
@@ -22,7 +23,7 @@ public class ConfigurationView implements GameView {
     private void initializeUI() {
         frame = new JFrame("Configuration - Bataille Navale");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 650);
+        frame.setSize(500, 700);
         frame.setLayout(new BorderLayout());
 
         JLabel titleLabel = new JLabel("Configuration des Bateaux", JLabel.CENTER);
@@ -40,23 +41,32 @@ public class ConfigurationView implements GameView {
 
         addBoatSelection(configPanel);
 
+        // --- OPTION MODE ÎLE ---
         configPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         islandModeCheckBox = new JCheckBox("Activer le Mode Île (Zone 4x4, items spéciaux)");
         islandModeCheckBox.setAlignmentX(Component.CENTER_ALIGNMENT);
         configPanel.add(islandModeCheckBox);
+
+        // --- OPTION IA FACILE  ---
+        configPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Petit espace
+        easyModeCheckBox = new JCheckBox("IA Facile (Tirs 100% aléatoires)");
+        easyModeCheckBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+        configPanel.add(easyModeCheckBox);
+
         configPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-
+        // --- COMPTEUR ---
         JLabel counterLabel = new JLabel("Cases utilisées: 0/35", JLabel.CENTER);
         counterLabel.setFont(new Font("Arial", Font.BOLD, 14));
         configPanel.add(counterLabel);
 
+        // --- BOUTONS ---
         JPanel buttonPanel = new JPanel();
         JButton startButton = new JButton("Démarrer la Partie");
         JButton defaultButton = new JButton("Configuration Par Défaut");
 
-        startButton.addActionListener(e -> startGame(counterLabel));
-        defaultButton.addActionListener(e -> setDefaultConfiguration(counterLabel));
+        startButton.addActionListener(_ -> startGame());
+        defaultButton.addActionListener(_ -> setDefaultConfiguration(counterLabel));
 
         buttonPanel.add(defaultButton);
         buttonPanel.add(startButton);
@@ -78,7 +88,7 @@ public class ConfigurationView implements GameView {
             JSpinner spinner = new JSpinner(new SpinnerNumberModel(1, 0, 3, 1));
             spinner.setPreferredSize(new Dimension(60, 25));
 
-            spinner.addChangeListener(e -> updateCellCounter());
+            spinner.addChangeListener(_ -> updateCellCounter());
 
             boatRow.add(nameLabel);
             boatRow.add(spinner);
@@ -109,7 +119,7 @@ public class ConfigurationView implements GameView {
         counterLabel.setForeground(totalCells > 35 ? Color.RED : Color.BLACK);
     }
 
-    private void startGame(JLabel counterLabel) {
+    private void startGame( ) {
         Map<BoatType, Integer> boatCounts = new HashMap<>();
         int totalCells = 0;
 
@@ -134,8 +144,9 @@ public class ConfigurationView implements GameView {
         }
 
         boolean isIslandMode = islandModeCheckBox.isSelected();
+        int aiLevel = easyModeCheckBox.isSelected() ? 1 : 2;
 
-        controller.handleConfigurationComplete(boatCounts, isIslandMode);
+        controller.handleConfigurationComplete(boatCounts, isIslandMode, aiLevel);
         frame.dispose();
     }
 
@@ -156,10 +167,4 @@ public class ConfigurationView implements GameView {
         frame.setVisible(true);
     }
 
-    public void update(Object data) {
-    }
-
-    public void showMessage(String message) {
-        JOptionPane.showMessageDialog(frame, message);
-    }
 }

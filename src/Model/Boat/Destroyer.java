@@ -5,8 +5,8 @@ import Model.HitOutcome;
 import Model.Player.Player;
 
 public class Destroyer implements Boat {
-    private int size;
-    private boolean[] hits;
+    final private int size;
+    final private boolean[] hits;
     private boolean sunk;
 
     public Destroyer() {

@@ -1,0 +1,669 @@
+@startuml BatailleNavale_Complet
+skinparam style strictuml
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+left to right direction
+
+    ' =========================================================
+    ' ---------------------- POINT D'ENTRÉE -----------------
+    ' =========================================================
+    class App {
+        +main(args: String[])
+    }
+
+    ' =========================================================
+    ' ---------------------- PACKAGE VIEW ---------------------
+    ' =========================================================
+    namespace View {
+        class GameView {
+            <<Interface>>
+        }
+
+        class BattleView {
+            -controller: Controller.GameController
+            -gridSize: int
+            -frame
+            -playerBattleGrid: BattleGrid
+            -enemyBattleGrid: BattleGrid
+            -infoPanel: InfoPanel
+            -missileBtn
+            -bombBtn
+            -sonarBtn
+            -weaponPanel
+            +BattleView(controller: Controller.GameController, gridSize: int)
+            +display()
+            +update(event: Object)
+            -refreshGrids()
+            -updateWeaponCounts()
+            -updateInfoPanel()
+            -createWeaponSelector()
+            -createGridPanel(title: String, isPlayerGrid: boolean)
+            -showEndGameView(result: String)
+        }
+
+        class PlacementView {
+            -controller: Controller.PlacementController
+            -frame
+            -gridCells: GridCell[][]
+            -gridSize: int
+            -statusLabel
+            -rotateButton
+            +PlacementView(controller: Controller.PlacementController)
+            +display()
+            +close()
+            +update(event: Object)
+            -refreshView()
+            -initializeUI()
+        }
+
+        class ConfigurationView {
+            -controller: Controller.ConfigurationController
+            -frame
+            -boatSpinners: Map
+            -islandModeCheckBox
+            -easyModeCheckBox
+            +ConfigurationView(controller: Controller.ConfigurationController)
+            +display()
+            -startGame()
+            -updateCellCounter()
+            -updateCellCounter(counterLabel)
+            -addBoatSelection(panel)
+            -setDefaultConfiguration(counterLabel)
+            -initializeUI()
+        }
+
+        class EndGameView {
+            -resultMessage: String
+            -controller: Controller.GameController
+            -frame
+            +EndGameView(msg: String, ctrl: Controller.GameController)
+            +display()
+            -restartGame()
+            -getJPanel()
+            -addStatLabel(panel, text: String)
+        }
+
+        class BattleGrid {
+            -gridCells: GridCell[][]
+            -gridSize: int
+            -controller: Controller.GameController
+            -isPlayerGrid: boolean
+            -gridPanel
+            +BattleGrid(size: int, ctrl: Controller.GameController, isPlayer: boolean)
+            +getGridPanel()
+            +refreshGrid()
+            -createGrid()
+            -createGridWithCoordinates()
+            -addClickListener(gridCell: GridCell, row: int, col: int)
+            -handleCellClick(row: int, col: int)
+        }
+
+        class InfoPanel {
+            <<extends JPanel>>
+            -turnLabel
+            -playerBoatsLabel
+            -enemyBoatsLabel
+            -inventoryLabel
+            -logArea
+            -logScrollPane
+            +InfoPanel()
+            +updateStats(turn: int, human: Model.HumanPlayer, cpu: Model.ComputerPlayer)
+            +addLog(message: String)
+            -getSunkCount(player: Model.Player): int
+        }
+
+        class GridCell {
+            -cellPanel
+            -state: View.CellState
+            +GridCell()
+            +getCellPanel()
+            +setState(state: View.CellState)
+            -createCell()
+            -updateAppearance()
+        }
+
+        class CellState {
+            <<Enumeration>>
+            WATER, BOAT, HIT, MISS, SUNK,
+            ISLAND, EXPLORED, ITEM_FOUND, TRAP
+        }
+    }
+
+    ' =========================================================
+    ' ------------------- PACKAGE CONTROLLER ------------------
+    ' =========================================================
+    namespace Controller {
+        class Observer {
+            <<Interface>>
+            +update(event: Object)
+        }
+
+        class GameController {
+            -playerGrid: Model.Grid
+            -enemyGrid: Model.Grid
+            -battleController: BattleController
+            -config: Model.GameConfiguration
+            -humanPlayer: Model.HumanPlayer
+            -computerPlayer: Model.ComputerPlayer
+            -observers: List
+            -isPlayerTurn: boolean
+            -lastComputerOutcome: Model.HitOutcome
+            -computerTornadoTurnsLeft: int
+            -playerTornadoTurnsLeft: int
+            -turnCount: int
+            +GameController()
+            +startApplication()
+            +getTurnCount(): int
+            +getPlayerTornadoTurnsLeft(): int
+            +setPlayerTornadoTurnsLeft(turns: int)
+            +showConfigurationView()
+            +handleConfigurationComplete(config: Model.GameConfiguration)
+            +log(message: String)
+            -initializeGame()
+            -startManualPlacement()
+            -placeIslandItemsRandomly(grid: Model.Grid)
+            -placeEnemyBoats(factory: Model.BoatFactory)
+            +placeBoatRandomly(boat: Model.Boat, grid: Model.Grid)
+            +playerAttacked(outcome: Model.HitOutcome)
+            +executeComputerTurn()
+            +addObserver(observer: Observer)
+            -notifyObservers(event: Object)
+            +isPlayerTurn(): boolean
+            +getHumanPlayer(): Model.HumanPlayer
+            +getComputerPlayer(): Model.ComputerPlayer
+            +showBattleView()
+            +getGrid(): Model.Grid
+            +getPlayerGrid(): Model.Grid
+            +getGridSize(): int
+            +getPlayerCellState(row: int, col: int): View.CellState
+            +getEnemyCellState(row: int, col: int): View.CellState
+            +getEnemyCellStateAfterAttack(row: int, col: int): View.CellState
+            +update(event: Object)
+            +getBattleController(): BattleController
+            -endGame(winner: Model.Player)
+            +applyTornadoEffect(originalCord: Model.Coordinates): Model.Coordinates
+            -placeTraps()
+            +placeEntityRandomly(entity: Model.GridEntity, grid: Model.Grid)
+            +getPlayerAliveBoatsCount(): int
+            +getComputerAliveBoatsCount(): int
+        }
+
+        class BattleController {
+            -mainController: GameController
+            -targetGrid: Model.Grid
+            -currentWeaponMode: WeaponMode
+            +BattleController(main: GameController)
+            +selectWeapon(mode: WeaponMode)
+            +handlePlayerAttack(row: int, col: int)
+            +update(event: Object)
+        }
+
+        class WeaponMode {
+            <<Enumeration>>
+            MISSILE, BOMB, SONAR
+        }
+
+        class PlacementController {
+            -mainController: GameController
+            -playerGrid: Model.Grid
+            -itemsToPlace: Queue
+            -currentItem: Model.GridEntity
+            -currentOrientation: Model.Orientation
+            -view: View.PlacementView
+            -observers: List
+            +PlacementController(mainController: GameController)
+            +setView(view: View.PlacementView)
+            +initializeBoats(config: Model.GameConfiguration)
+            -nextItem()
+            +handleGridClick(row: int, col: int)
+            -finishPlacement()
+            +toggleOrientation()
+            +startGame()
+            +getCellState(row: int, col: int): View.CellState
+            +getCurrentItemName(): String
+            +getCurrentItemSize(): int
+            +getOrientation(): Model.Orientation
+            +getGridSize(): int
+            +addObserver(observer: Observer)
+            -notifyObservers(msg: String)
+            +update(event: Object)
+        }
+
+        class ConfigurationController {
+            <<record>>
+            -mainController: GameController
+            +ConfigurationController(mainController: GameController)
+            +handleConfigurationComplete(counts: Map, island: boolean, aiLevel: int)
+            +update(event: Object)
+        }
+    }
+
+    ' =========================================================
+    ' --------------------- PACKAGE MODEL ---------------------
+    ' =========================================================
+    namespace Model {
+        class GameConfiguration {
+            -gridSize: int
+            -boatCounts: Map
+            -islandMode: boolean
+            -numSpecialItems: int
+            -computerShotLevel: int
+            -placementLevel: int
+            +GameConfiguration(gridSize: int, boatCounts: Map, islandMode: boolean, numSpecialItems: int, computerShotLevel: int, placementLevel: int)
+            +getGridSize(): int
+            +getBoatCounts(): Map
+            +setBoatCounts(boatCounts: Map)
+            +isIslandMode(): boolean
+            +getNumSpecialItems(): int
+            +getComputerShotLevel(): int
+            +getPlacementLevel(): int
+            +getTotalBoatCells(): int
+            -calculateTotalCells(boatCounts: Map): int
+        }
+
+        class Coordinates {
+            -row: int
+            -column: int
+            +Coordinates(row: int, column: int)
+            +getRow(): int
+            +getColumn(): int
+            +isValid(gridSize: int): boolean
+            +toString(): String
+            +equals(o: Object): boolean
+            +hashCode(): int
+        }
+
+        class HitOutcome {
+            <<Enumeration>>
+            MISS, HIT, SUNK, TRAP_TRIGGERED,
+            ACQUIRED_WEAPON, INVALID
+        }
+
+        class Orientation {
+            <<Enumeration>>
+            HORIZONTAL, VERTICAL
+        }
+
+        class GridEntity {
+            <<Interface>>
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+            +entityType(): String
+            +size(): int
+        }
+
+        ' --- MAP ---
+        class Grid {
+            -size: int
+            -cells: GridCell[][]
+            +Grid(size: int)
+            +placeBoat(boat: Boat, c: Coordinates, o: Orientation): boolean
+            +getCell(c: Coordinates): GridCell
+            +markIslandZone(r: int, c: int)
+            +getSize(): int
+            +getCells(): GridCell[][]
+            -initializeGrid()
+            -isValidPlacement(positions: List): boolean
+            -calculateBoatPositions(boat: Boat, start: Coordinates, orientation: Orientation): List
+        }
+
+        class GridCell {
+            -entity: GridEntity
+            -isHit: boolean
+            -boatSegmentIndex: int
+            -isIslandCell: boolean
+            +GridCell()
+            +strike(attacker: Player): HitOutcome
+            +setEntity(e: GridEntity)
+            +getEntity(): GridEntity
+            +isOccupied(): boolean
+            +isHit(): boolean
+            +setHit(hit: boolean)
+            +isIslandCell(): boolean
+            +setIsIslandCell(isIslandCell: boolean)
+            +setBoatSegmentIndex(index: int)
+        }
+
+        ' --- PLAYER ---
+        class Player {
+            <<Abstract>>
+            #ownGrid: Grid
+            #targetGrid: Grid
+            +Player(ownGrid: Grid, targetGrid: Grid)
+            +fire(c: Coordinates): HitOutcome
+            +isDefeated(): boolean
+            +getAliveBoatsCount(): int
+            +getOwnGrid(): Grid
+            #areAllBoatsSunk(): boolean
+        }
+
+        class HumanPlayer {
+            -name: String
+            -bombCount: int
+            -sonarCount: int
+            +HumanPlayer(name: String, ownGrid: Grid, targetGrid: Grid)
+            +useBomb()
+            +useSonar()
+            +addBomb()
+            +addSonar()
+            +hasBomb(): boolean
+            +hasSonar(): boolean
+            +getBombCount(): int
+            +getSonarCount(): int
+            +getName(): String
+            +isSubmarineAlive(): boolean
+            +fire(c: Coordinates): HitOutcome
+            +isDefeated(): boolean
+        }
+
+        class ComputerPlayer {
+            -shotStrategy: ShotStrategy
+            +ComputerPlayer(ownGrid: Grid, targetGrid: Grid)
+            +chooseNextShot(lastOutcome: HitOutcome): Coordinates
+            +notifyShotResult(target: Coordinates, outcome: HitOutcome)
+            +setShotStrategy(strategy: ShotStrategy)
+            +fire(c: Coordinates): HitOutcome
+            +isDefeated(): boolean
+        }
+
+        class ShotStrategy {
+            <<Interface>>
+            +getNextShot(grid: Grid, last: HitOutcome): Coordinates
+        }
+
+        class RandomShotStrategy {
+            +RandomShotStrategy()
+            +getNextShot(grid: Grid, last: HitOutcome): Coordinates
+        }
+
+        class TargetedShotStrategy {
+            -potentialTargets: List
+            -lastHit: Coordinates
+            -isHunting: boolean
+            +TargetedShotStrategy()
+            +getNextShot(grid: Grid, last: HitOutcome): Coordinates
+            +setLastHit(hit: Coordinates)
+            -findNextValidTarget(grid: Grid): Coordinates
+            -addAdjacentTargets(hit: Coordinates, grid: Grid)
+            -getRandomShot(grid: Grid): Coordinates
+            -isValidTarget(coord: Coordinates, grid: Grid): boolean
+            -isCellHit(grid: Grid, coord: Coordinates): boolean
+        }
+
+        ' --- BOAT ---
+        class Boat {
+            <<Interface>>
+            +isSunk(): boolean
+            +receiveHit(index: int): HitOutcome
+            +getType(): BoatType
+            +name(): String
+            +size(): int
+            +entityType(): String
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+        }
+
+        class BoatFactory {
+            <<Interface>>
+            +create(type: BoatType): Boat
+        }
+
+        class SimpleBoatFactory {
+            +SimpleBoatFactory()
+            +create(type: BoatType): Boat
+        }
+
+        class BoatType {
+            <<Enumeration>>
+            AIRCRAFT_CARRIER, CRUISER,
+            DESTROYER, SUBMARINE, TORPEDO
+            -size: int
+            -name: String
+            +BoatType(size: int, name: String)
+            +getSize(): int
+            +getName(): String
+        }
+
+        class Cruiser {
+            -size: int
+            -hits: boolean[]
+            -sunk: boolean
+            +Cruiser()
+            +isSunk(): boolean
+            +receiveHit(index: int): HitOutcome
+            +getType(): BoatType
+            +name(): String
+            +size(): int
+            +entityType(): String
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+        }
+
+        class Destroyer {
+            -size: int
+            -hits: boolean[]
+            -sunk: boolean
+            +Destroyer()
+            +isSunk(): boolean
+            +receiveHit(index: int): HitOutcome
+            +getType(): BoatType
+            +name(): String
+            +size(): int
+            +entityType(): String
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+        }
+
+        class Submarine {
+            -size: int
+            -hits: boolean[]
+            -sunk: boolean
+            +Submarine()
+            +isSunk(): boolean
+            +receiveHit(index: int): HitOutcome
+            +getType(): BoatType
+            +name(): String
+            +size(): int
+            +entityType(): String
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+        }
+
+        class TorpedoBoat {
+            -size: int
+            -hits: boolean[]
+            -sunk: boolean
+            +TorpedoBoat()
+            +isSunk(): boolean
+            +receiveHit(index: int): HitOutcome
+            +getType(): BoatType
+            +name(): String
+            +size(): int
+            +entityType(): String
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+        }
+
+        class AircraftCarrier {
+            -size: int
+            -hits: boolean[]
+            -sunk: boolean
+            +AircraftCarrier()
+            +isSunk(): boolean
+            +receiveHit(index: int): HitOutcome
+            +getType(): BoatType
+            +name(): String
+            +size(): int
+            +entityType(): String
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+        }
+
+        ' --- ITEMS & TRAPS ---
+        class IslandItem {
+            <<Interface>>
+            +onAcquired(p: Player): HitOutcome
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+            +entityType(): String
+            +size(): int
+        }
+
+        class BombItem {
+            +BombItem()
+            +onAcquired(player: Player): HitOutcome
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+            +entityType(): String
+            +size(): int
+        }
+
+        class SonarItem {
+            +SonarItem()
+            +onAcquired(player: Player): HitOutcome
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+            +entityType(): String
+            +size(): int
+        }
+
+        class IslandEmpty {
+            +IslandEmpty()
+            +onAcquired(player: Player): HitOutcome
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+            +entityType(): String
+            +size(): int
+        }
+
+        class BlackHole {
+            -size: int
+            -isTriggered: boolean
+            +BlackHole()
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+            +onTriggered(): HitOutcome
+            +entityType(): String
+            +size(): int
+        }
+
+        class Tornado {
+            -size: int
+            -isTriggered: boolean
+            +Tornado()
+            +handleImpact(attacker: Player, c: Coordinates): HitOutcome
+            +onTriggered(): HitOutcome
+            +entityType(): String
+            +size(): int
+        }
+
+        ' --- WEAPONS ---
+        class Bomb {
+            +Bomb()
+            +use(grid: Grid, target: Coordinates, attacker: Player)
+        }
+
+        class Sonar {
+            +Sonar()
+            +scan(grid: Grid, target: Coordinates): int
+        }
+    }
+
+    ' =========================================================
+    ' -------------------- RELATIONS --------------------------
+    ' =========================================================
+
+    ' --- POINT D'ENTRÉE ---
+    App ..> Controller.GameController : creates and starts
+
+    ' --- OBSERVER PATTERN ---
+    Controller.Observer <|.. Controller.GameController
+    Controller.Observer <|.. Controller.BattleController
+    Controller.Observer <|.. Controller.PlacementController
+    Controller.Observer <|.. Controller.ConfigurationController
+    Controller.Observer <|.. View.BattleView
+    Controller.Observer <|.. View.PlacementView
+    Controller.GameController o-- Controller.Observer : notifies >
+    Controller.PlacementController o-- Controller.Observer : notifies >
+
+    ' --- CONTROLLER RELATIONS ---
+    Controller.GameController *-- Controller.BattleController : owns
+    Controller.GameController ..> Controller.ConfigurationController : creates
+    Controller.GameController ..> Controller.PlacementController : creates
+    Controller.GameController "1" --> "1" Model.GameConfiguration : uses
+    Controller.GameController --> Model.HumanPlayer : owns
+    Controller.GameController --> Model.ComputerPlayer : owns
+    Controller.GameController --> Model.Grid : owns
+    Controller.GameController --> Model.HitOutcome : uses
+    Controller.BattleController --> Controller.GameController : uses
+    Controller.BattleController --> Controller.WeaponMode : uses
+    Controller.BattleController --> Model.HitOutcome : uses
+    Controller.BattleController ..> Model.Bomb : creates and uses
+    Controller.BattleController ..> Model.Sonar : creates and uses
+    Controller.PlacementController --> View.PlacementView : references
+    Controller.PlacementController --> Model.Orientation : uses
+    Controller.PlacementController ..> Model.SimpleBoatFactory : creates and uses
+    Controller.PlacementController ..> Model.BlackHole : creates
+    Controller.PlacementController ..> Model.Tornado : creates
+
+    ' --- VIEW RELATIONS ---
+    View.BattleView --> Controller.GameController : commands
+    View.BattleView *-- View.BattleGrid : owns
+    View.BattleView *-- View.InfoPanel : owns
+    View.BattleView ..> View.EndGameView : creates
+    View.EndGameView --> Controller.GameController : restarts
+    View.PlacementView --> Controller.PlacementController : commands
+    View.PlacementView *-- View.GridCell : composition
+    View.PlacementView --> View.CellState : uses
+    View.ConfigurationView --> Controller.ConfigurationController : commands
+    View.ConfigurationView --> Model.BoatType : uses
+    View.GameView <|.. View.ConfigurationView
+    View.BattleGrid *-- View.GridCell : composition
+    View.BattleGrid --> Controller.GameController : uses
+
+    ' --- MODEL: PLAYER & STRATEGY ---
+    Model.Player <|-- Model.HumanPlayer
+    Model.Player <|-- Model.ComputerPlayer
+    Model.Player --> Model.HitOutcome : uses
+    Model.ComputerPlayer *-- Model.ShotStrategy : strategy
+    Model.ShotStrategy <|.. Model.RandomShotStrategy
+    Model.ShotStrategy <|.. Model.TargetedShotStrategy
+    Model.ShotStrategy --> Model.HitOutcome : uses
+    Model.Player --> Model.Grid : has own & target
+    Model.TargetedShotStrategy o-- Model.Coordinates : aggregates
+
+    ' --- MODEL: MAP STRUCTURE ---
+    Model.Grid *-- Model.GridCell : composition
+    Model.Grid --> Model.Orientation : uses
+    Model.GridCell o-- Model.GridEntity : aggregation
+    Model.GridCell --> Model.HitOutcome : uses
+
+    ' --- MODEL: ENTITIES HIERARCHY ---
+    Model.GridEntity <|.. Model.Boat
+    Model.GridEntity --> Model.HitOutcome : uses
+    Model.GridEntity <|.. Model.IslandItem
+    Model.GridEntity <|.. Model.BlackHole
+    Model.GridEntity <|.. Model.Tornado
+
+    ' --- BOATS FACTORY & TYPES ---
+    Model.Boat <|.. Model.Cruiser
+    Model.Boat <|.. Model.Destroyer
+    Model.Boat <|.. Model.Submarine
+    Model.Boat <|.. Model.TorpedoBoat
+    Model.Boat <|.. Model.AircraftCarrier
+    Model.Boat --> Model.HitOutcome : uses
+    Model.BoatFactory <|.. Model.SimpleBoatFactory
+    Model.SimpleBoatFactory ..> Model.Boat : creates
+    Model.Boat --> Model.BoatType : uses
+    Controller.GameController ..> Model.SimpleBoatFactory : creates and uses
+
+    ' --- ITEMS & TRAPS ---
+    Model.IslandItem <|.. Model.BombItem
+    Model.IslandItem <|.. Model.SonarItem
+    Model.IslandItem <|.. Model.IslandEmpty
+    Model.IslandItem --> Model.HitOutcome : uses
+    Model.IslandItem ..> Model.HumanPlayer : modifies inventory
+    Model.BlackHole --> Model.HitOutcome : uses
+    Model.Tornado --> Model.HitOutcome : uses
+    Controller.GameController ..> Model.BombItem : creates
+    Controller.GameController ..> Model.SonarItem : creates
+    Controller.GameController ..> Model.IslandEmpty : creates
+    Controller.GameController ..> Model.BlackHole : creates
+    Controller.GameController ..> Model.Tornado : creates
+
+    ' --- WEAPONS LOGIC ---
+    Controller.BattleController ..> Model.Bomb : uses
+    Controller.BattleController ..> Model.Sonar : uses
+
+@enduml
+

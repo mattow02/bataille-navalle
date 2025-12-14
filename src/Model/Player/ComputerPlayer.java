@@ -18,22 +18,25 @@ public class ComputerPlayer extends Player {
         return targetGrid.getCell(coordinates).strike(this);
     }
 
-    @Override
-    public HitOutcome handleIncomingFire(Coordinates coordinates) {
-        return ownGrid.getCell(coordinates).strike(null);
-    }
-
     // Choisit la prochaine cible selon le résultat du dernier tir
     public Coordinates chooseNextShot(HitOutcome lastOutcome) {
         return shotStrategy.getNextShot(targetGrid, lastOutcome);
     }
 
-    public ShotStrategy getShotStrategy() {
-        return shotStrategy;
+    public void setShotStrategy(ShotStrategy shotStrategy) {
+        this.shotStrategy = shotStrategy;
     }
 
     @Override
     public boolean isDefeated() {
         return areAllBoatsSunk();
+    }
+
+    public void notifyShotResult(Model.Coordinates target, Model.HitOutcome outcome) {
+        if (outcome == Model.HitOutcome.HIT || outcome == Model.HitOutcome.SUNK) {
+            if (shotStrategy instanceof TargetedShotStrategy) {
+                ((TargetedShotStrategy) shotStrategy).setLastHit(target);
+            }
+        }
     }
 }

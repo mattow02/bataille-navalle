@@ -1,18 +1,13 @@
 package View;
 
 import Controller.GameController;
-import Model.Boat.Boat;
-import Model.Player.Player;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.HashSet;
-import java.util.Set;
 
 public class EndGameView {
-    private String resultMessage;
-    private GameController controller;
+    private final String resultMessage;
+    private final GameController controller;
     private JFrame frame;
 
     public EndGameView(String resultMessage, GameController controller) {
@@ -41,8 +36,8 @@ public class EndGameView {
         statsPanel.setBorder(new EmptyBorder(10, 40, 10, 40));
 
         int tours = controller.getTurnCount();
-        int playerBoatsLeft = countAliveBoats(controller.getHumanPlayer());
-        int enemyBoatsLeft = countAliveBoats(controller.getComputerPlayer());
+        int playerBoatsLeft = controller.getPlayerAliveBoatsCount();
+        int enemyBoatsLeft = controller.getComputerAliveBoatsCount();
 
         addStatLabel(statsPanel, "Durée de la bataille : " + tours + " tours");
         statsPanel.add(Box.createRigidArea(new Dimension(0, 15)));
@@ -64,6 +59,15 @@ public class EndGameView {
 
         frame.add(statsPanel, BorderLayout.CENTER);
 
+        JPanel buttonPanel = getJPanel();
+
+        frame.add(buttonPanel, BorderLayout.SOUTH);
+
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
+    private JPanel getJPanel() {
         JPanel buttonPanel = new JPanel();
         JButton restartButton = new JButton("Rejouer une partie");
         JButton quitButton = new JButton("Quitter");
@@ -71,17 +75,13 @@ public class EndGameView {
         restartButton.setFont(new Font("Arial", Font.BOLD, 14));
         quitButton.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        restartButton.addActionListener(e -> restartGame());
-        quitButton.addActionListener(e -> System.exit(0));
+        restartButton.addActionListener(_ -> restartGame());
+        quitButton.addActionListener(_ -> System.exit(0));
 
         buttonPanel.add(restartButton);
         buttonPanel.add(quitButton);
         buttonPanel.setBorder(new EmptyBorder(10, 10, 20, 10));
-
-        frame.add(buttonPanel, BorderLayout.SOUTH);
-
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        return buttonPanel;
     }
 
     private void addStatLabel(JPanel panel, String text) {
@@ -92,28 +92,6 @@ public class EndGameView {
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
     }
 
-    private int countAliveBoats(Player player) {
-        if (player == null) return 0;
-        Set<Boat> uniqueBoats = new HashSet<>();
-        int size = player.getOwnGrid().getSize();
-
-        for (int r = 0; r < size; r++) {
-            for (int c = 0; c < size; c++) {
-                Model.Map.GridCell cell = player.getOwnGrid().getCell(new Model.Coordinates(r, c));
-                if (cell.isOccupied() && cell.getEntity() instanceof Boat) {
-                    uniqueBoats.add((Boat) cell.getEntity());
-                }
-            }
-        }
-
-        int aliveCount = 0;
-        for (Boat boat : uniqueBoats) {
-            if (!boat.isSunk()) {
-                aliveCount++;
-            }
-        }
-        return aliveCount;
-    }
 
     private void restartGame() {
         if (frame != null) {

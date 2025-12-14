@@ -5,8 +5,7 @@ import java.awt.*;
 
 public class GridCell {
     private JPanel cellPanel;
-    private CellState state;
-    private CellState currentState;
+    private final CellState state;
 
     public GridCell() {
         this.state = CellState.WATER;
@@ -23,9 +22,6 @@ public class GridCell {
 
     private void updateAppearance() {
         switch(state) {
-            case WATER:
-                cellPanel.setBackground(Color.BLUE);
-                break;
             case BOAT:
                 cellPanel.setBackground(Color.GRAY);
                 break;
@@ -47,46 +43,20 @@ public class GridCell {
         return cellPanel;
     }
 
-    public CellState getState() {
-        return state;
-    }
+
 
     public void setState(CellState state) {
-        this.currentState = state;
-        Color color;
-
-        switch (state) {
-            case WATER:
-                color = Color.BLUE;
-                break;
-            case BOAT:
-                color = Color.LIGHT_GRAY;
-                break;
-            case HIT:
-                color = Color.RED;
-                break;
-            case MISS:
-                color = Color.WHITE;
-                break;
-            case SUNK:
-                color = Color.BLACK;
-                break;
-            case ISLAND:
-                color = new Color(139, 69, 19);
-                break;
-            case EXPLORED:
-                color = new Color(220, 220, 220);
-                break;
-            case ITEM_FOUND:
-                color = Color.YELLOW;
-                break;
-            default:
-                color = Color.MAGENTA;
-                break;
-            case TRAP:
-                color = Color.MAGENTA;
-                break;
-        }
+        Color color = switch (state) {
+            case WATER -> Color.BLUE;
+            case BOAT -> Color.LIGHT_GRAY;
+            case HIT -> Color.RED;
+            case MISS -> Color.WHITE;
+            case SUNK -> Color.BLACK;
+            case ISLAND -> new Color(139, 69, 19);
+            case EXPLORED -> Color.GREEN;
+            case ITEM_FOUND -> Color.YELLOW;
+            default -> Color.MAGENTA;
+        };
 
         if (cellPanel != null) {
             cellPanel.setBackground(color);

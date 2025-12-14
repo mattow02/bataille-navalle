@@ -52,10 +52,10 @@ public class BattleController implements Observer {
     }
 
     // Gère l'attaque du joueur selon l'arme sélectionnée (missile/bombe/sonar)
-    public HitOutcome handlePlayerAttack(int row, int col) {
+    public void handlePlayerAttack(int row, int col) {
         if (!mainController.isPlayerTurn()) {
             mainController.log("⏳ Attendez le tour de l'IA...");
-            return HitOutcome.INVALID;
+            return;
         }
 
         Coordinates target = new Coordinates(row, col);
@@ -66,7 +66,7 @@ public class BattleController implements Observer {
             GridCell cell = targetGrid.getCell(target);
             if (cell != null && cell.isIslandCell()) {
                 mainController.log("❌ Impossible d'utiliser le Sonar sur l'île !");
-                return HitOutcome.INVALID;
+                return;
             }
 
             Sonar sonar = new Sonar();
@@ -75,8 +75,8 @@ public class BattleController implements Observer {
 
             player.useSonar();
             currentWeaponMode = WeaponMode.MISSILE;
-            mainController.playerAttacked(row, col, HitOutcome.MISS);
-            return HitOutcome.MISS;
+            mainController.playerAttacked(HitOutcome.MISS);
+            return;
         }
 
         // Utilisation de la bombe : explosion en croix (5 cases)
@@ -87,8 +87,8 @@ public class BattleController implements Observer {
 
             player.useBomb();
             currentWeaponMode = WeaponMode.MISSILE;
-            mainController.playerAttacked(row, col, HitOutcome.HIT);
-            return HitOutcome.HIT;
+            mainController.playerAttacked(HitOutcome.HIT);
+            return;
         }
 
         // Tir standard avec gestion de l'effet tornade
@@ -102,15 +102,15 @@ public class BattleController implements Observer {
 
         if (!target.isValid(targetGrid.getSize())) {
             mainController.log("❌ Tir hors zone !");
-            return HitOutcome.INVALID;
+            return;
         }
 
         GridCell targetCell = targetGrid.getCell(target);
-        if (targetCell == null) return HitOutcome.INVALID;
+        if (targetCell == null) return;
 
         Model.GridEntity targetEntity = targetCell.getEntity();
 
-        String coordStr = (char)('A' + target.getRow()) + "" + (target.getColumn() + 1);
+        String cordStr = (char)('A' + target.getRow()) + "" + (target.getColumn() + 1);
         String prefix = targetCell.isIslandCell() ? "Fouille en " : "Tir en ";
 
         HitOutcome outcome = targetCell.strike(player);
@@ -141,7 +141,7 @@ public class BattleController implements Observer {
             case TRAP_TRIGGERED: resultMsg = " : ⚠️ PIÈGE DÉCLENCHÉ !"; break;
         }
 
-        mainController.log(prefix + coordStr + resultMsg);
+        mainController.log(prefix + cordStr + resultMsg);
 
         // Gestion des pièges déclenchés
         if (outcome == HitOutcome.TRAP_TRIGGERED) {
@@ -169,7 +169,6 @@ public class BattleController implements Observer {
             }
         }
 
-        mainController.playerAttacked(target.getRow(), target.getColumn(), finalOutcome);
-        return finalOutcome;
+        mainController.playerAttacked(finalOutcome);
     }
 }

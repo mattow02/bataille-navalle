@@ -4,6 +4,7 @@ import Model.*;
 import Model.GameConfiguration;
 import Model.Player.ComputerPlayer;
 import Model.Player.HumanPlayer;
+import Model.Player.RandomShotStrategy;
 import Model.Player.TargetedShotStrategy;
 import View.BattleView;
 import Model.Map.Grid;
@@ -28,7 +29,7 @@ public class GameController implements Observer {
     private int playerTornadoTurnsLeft = 0;
     private int turnCount = 1;
     // Liste des observateurs pour le pattern Observer
-    private java.util.List<Observer> observers = new java.util.ArrayList<>();
+    private final java.util.List<Observer> observers = new java.util.ArrayList<>();
 
     public GameController() {
         this.playerGrid = new Grid(10);
@@ -49,13 +50,8 @@ public class GameController implements Observer {
     public int getTurnCount() {
         return turnCount;
     }
-    public int getComputerTornadoTurnsLeft() {
-        return computerTornadoTurnsLeft;
-    }
 
-    public void setComputerTornadoTurnsLeft(int computerTornadoTurnsLeft) {
-        this.computerTornadoTurnsLeft = computerTornadoTurnsLeft;
-    }
+
 
     public int getPlayerTornadoTurnsLeft() {
         return playerTornadoTurnsLeft;
@@ -82,24 +78,32 @@ public class GameController implements Observer {
         notifyObservers("LOG:" + message);
     }
 
-    // Initialise toutes les composantes du jeu selon la configuration
     private void initializeGame() {
+        // 1. Réinitialisation des compteurs (Pour le bouton Rejouer)
         this.turnCount = 1;
         this.computerTornadoTurnsLeft = 0;
         this.playerTornadoTurnsLeft = 0;
         this.lastComputerOutcome = null;
         this.isPlayerTurn = true;
 
+        // 2. Création des grilles et joueurs
         this.playerGrid = new Grid(config.getGridSize());
         this.enemyGrid = new Grid(config.getGridSize());
 
         this.humanPlayer = new HumanPlayer("Joueur", playerGrid, enemyGrid);
         this.computerPlayer = new ComputerPlayer(enemyGrid, playerGrid);
 
-        this.battleController = new BattleController(this);
-        this.isPlayerTurn = true;
+        if (config.getComputerShotLevel() == 1) {
+            computerPlayer.setShotStrategy(new RandomShotStrategy());
+            log("🤖 IA configurée en mode FACILE (Aléatoire).");
+        } else {
+            computerPlayer.setShotStrategy(new TargetedShotStrategy());
+            log("🤖 IA configurée en mode DIFFICILE (Chasse).");
+        }
 
-        // Mode île : crée une zone 4x4 avec items et pièges
+        this.battleController = new BattleController(this);
+
+        // 3. Gestion du Mode Île
         if (config.isIslandMode()) {
             int islandStart = config.getGridSize() / 2 - 2;
             playerGrid.markIslandZone(islandStart, islandStart);
@@ -107,16 +111,18 @@ public class GameController implements Observer {
             placeIslandItemsRandomly(enemyGrid);
         }
 
-        // Mode standard : donne des armes par défaut au joueur
+        // 4. Gestion du Mode Standard (Pas d'île)
         if (!config.isIslandMode()) {
             humanPlayer.addBomb();
             humanPlayer.addSonar();
             log("Mode Standard : 1 Bombe et 1 Sonar ajoutés.");
         }
 
+        // 5. Placement des bateaux IA
         BoatFactory factory = new SimpleBoatFactory();
         placeEnemyBoats(factory);
 
+        // 6. Lancement du placement joueur
         startManualPlacement();
     }
 
@@ -134,13 +140,13 @@ public class GameController implements Observer {
     private void placeIslandItemsRandomly(Grid grid) {
         int gridSize = grid.getSize();
         int islandStart = gridSize / 2 - 2;
-        List<Coordinates> islandCoords = new java.util.ArrayList<>();
+        List<Coordinates> islandCords = new java.util.ArrayList<>();
 
         for (int r = islandStart; r < islandStart + 4; r++) {
             for (int c = islandStart; c < islandStart + 4; c++) {
-                Coordinates coord = new Coordinates(r, c);
-                if (grid.getCell(coord).isIslandCell() && !grid.getCell(coord).isOccupied()) {
-                    islandCoords.add(coord);
+                Coordinates cord = new Coordinates(r, c);
+                if (grid.getCell(cord).isIslandCell() && !grid.getCell(cord).isOccupied()) {
+                    islandCords.add(cord);
                 }
             }
         }
@@ -151,39 +157,26 @@ public class GameController implements Observer {
         itemsToPlace.add(new Model.Trap.BlackHole());
         itemsToPlace.add(new Model.Trap.Tornado());
 
-        java.util.Collections.shuffle(islandCoords);
+        java.util.Collections.shuffle(islandCords);
 
         int itemsCount = itemsToPlace.size();
-        for (int i = 0; i < itemsCount; i++) {
-            if (!islandCoords.isEmpty()) {
-                Coordinates coord = islandCoords.remove(0);
-                grid.getCell(coord).setEntity(itemsToPlace.get(i));
+        for (GridEntity gridEntity : itemsToPlace) {
+            if (!islandCords.isEmpty()) {
+                Coordinates cord = islandCords.removeFirst();
+                grid.getCell(cord).setEntity(gridEntity);
             }
         }
 
-        for (Coordinates coord : islandCoords) {
-            grid.getCell(coord).setEntity(new Model.Island.IslandEmpty());
+        for (Coordinates cord : islandCords) {
+            grid.getCell(cord).setEntity(new Model.Island.IslandEmpty());
         }
 
         log("Île initialisée. Total d'entités cachées: " + itemsCount);
     }
 
-    private void placeBoatsFromConfiguration() {
-        BoatFactory factory = new SimpleBoatFactory();
-        placePlayerBoats(factory);
-        placeEnemyBoats(factory);
-    }
 
-    private void placePlayerBoats(BoatFactory factory) {
-        for (Map.Entry<BoatType, Integer> entry : config.getBoatCounts().entrySet()) {
-            BoatType type = entry.getKey();
-            int count = entry.getValue();
-            for (int i = 0; i < count; i++) {
-                Boat boat = factory.create(type);
-                placeBoatRandomly(boat, playerGrid);
-            }
-        }
-    }
+
+
 
     private void placeEnemyBoats(BoatFactory factory) {
         for (Map.Entry<BoatType, Integer> entry : config.getBoatCounts().entrySet()) {
@@ -196,22 +189,21 @@ public class GameController implements Observer {
         }
     }
 
-    boolean placeBoatRandomly(Boat boat, Grid grid) {
+    void placeBoatRandomly(Boat boat, Grid grid) {
         int attempts = 0;
         while (attempts < 100) {
             int row = (int) (Math.random() * grid.getSize());
             int col = (int) (Math.random() * grid.getSize());
             Orientation orientation = Math.random() > 0.5 ? Orientation.HORIZONTAL : Orientation.VERTICAL;
             if (grid.placeBoat(boat, new Coordinates(row, col), orientation)) {
-                return true;
+                return;
             }
             attempts++;
         }
-        return false;
     }
 
     // Gère l'attaque du joueur et passe le tour à l'IA après un délai
-    public void playerAttacked(int row, int col, HitOutcome outcome) {
+    public void playerAttacked( HitOutcome outcome) {
         if (!isPlayerTurn) {
             return;
         }
@@ -228,7 +220,7 @@ public class GameController implements Observer {
             }
         }
 
-        // Délai de 1.5s avant le tour de l'IA pour la lisibilité
+        // Délai de 0.5s avant le tour de l'IA pour la lisibilité
         new java.util.Timer().schedule(
                 new java.util.TimerTask() {
                     @Override
@@ -236,64 +228,69 @@ public class GameController implements Observer {
                         executeComputerTurn();
                     }
                 },
-                1500
+                500
         );
     }
 
 
     // Exécute le tour de l'IA avec gestion de la tornade et mise à jour de la stratégie
     public void executeComputerTurn() {
-        HitOutcome outcome;
-        Coordinates target;
+        // Bloc de sécurité pour garantir que le jeu ne se fige jamais
+        try {
+            HitOutcome outcome;
+            Coordinates target;
 
-        Coordinates chosenTarget = computerPlayer.chooseNextShot(lastComputerOutcome);
-        target = chosenTarget;
+            // 1. Sélection de la cible par l'IA (selon sa stratégie actuelle)
+            Coordinates chosenTarget = computerPlayer.chooseNextShot(lastComputerOutcome);
+            target = chosenTarget;
 
-        // Applique l'effet tornade si actif (dévie le tir de 5 cases)
-        if (computerTornadoTurnsLeft > 0) {
-            target = applyTornadoEffect(chosenTarget);
-            computerTornadoTurnsLeft--;
-            log("🌪️ Tornade active (Reste " + computerTornadoTurnsLeft + " tours). Tir ciblé en " + chosenTarget + " décalé en " + target);
+            // 2. Application de l'effet Tornade (si actif sur l'IA)
+            // Dévie le tir de +5 cases en X et Y.
+            if (computerTornadoTurnsLeft > 0) {
+                target = applyTornadoEffect(chosenTarget);
+                computerTornadoTurnsLeft--;
+                log("🌪️ Tornade active (Reste " + computerTornadoTurnsLeft + " tours). Tir ciblé en " + chosenTarget + " décalé en " + target);
+            }
+
+            // 3. Exécution du tir
+            outcome = computerPlayer.fire(target);
+
+            // 4. Construction du message de log pour l'interface
+            String cordStr = (char) ('A' + target.getRow()) + "" + (target.getColumn() + 1);
+            String msg = "L'IA attaque en " + cordStr;
+            if (outcome == HitOutcome.HIT) msg += " : TOUCHÉ !";
+            else if (outcome == HitOutcome.SUNK) msg += " : COULÉ !";
+            else msg += " : Manqué.";
+            log(msg);
+
+            // Mise à jour de l'affichage
+            notifyObservers("REFRESH_ALL");
+
+            // 5. Vérification de la condition de victoire
+            if (humanPlayer.isDefeated()) {
+                log("TOUS vos bateaux sont coulés !");
+                endGame(computerPlayer);
+                return; // Fin du traitement
+            }
+
+            lastComputerOutcome = outcome;
+
+           computerPlayer.notifyShotResult(target, outcome);
+
+            Thread.sleep(500);
+
+        } catch (Exception e) {
+            System.err.println("Erreur durant le tour de l'IA : " + e.getMessage());
+
+        } finally {
+
+            isPlayerTurn = true;
         }
-
-        outcome = computerPlayer.fire(target);
-
-        String coordStr = (char)('A' + target.getRow()) + "" + (target.getColumn() + 1);
-        String msg = "L'IA attaque en " + coordStr;
-        if (outcome == HitOutcome.HIT) msg += " : TOUCHÉ !";
-        else if (outcome == HitOutcome.SUNK) msg += " : COULÉ !";
-        else msg += " : Manqué.";
-        log(msg);
-
-        notifyObservers("REFRESH_ALL");
-
-        // Vérifie si le joueur est vaincu
-        if (humanPlayer.isDefeated()) {
-            log("TOUS vos bateaux sont coulés !");
-            endGame(computerPlayer);
-            return;
-        }
-
-        lastComputerOutcome = outcome;
-
-        // Met à jour la stratégie ciblée si l'IA a touché
-        if (outcome == HitOutcome.HIT || outcome == HitOutcome.SUNK) {
-            TargetedShotStrategy strategy = (TargetedShotStrategy) computerPlayer.getShotStrategy();
-            strategy.setLastHit(target);
-        }
-
-        try { Thread.sleep(1000); } catch (InterruptedException e) {}
-
-        isPlayerTurn = true;
     }
 
 
     public void addObserver(Observer observer) {
         observers.add(observer);
-    }
-
-    public void removeObserver(Observer observer) {
-        observers.remove(observer);
     }
 
     private void notifyObservers(Object event) {
@@ -324,36 +321,6 @@ public class GameController implements Observer {
         battleView.display();
     }
 
-    public CellState getCellState(int row, int col) {
-        if (enemyGrid == null) return CellState.WATER;
-
-        Coordinates coord = new Coordinates(row, col);
-        Model.Map.GridCell cell = enemyGrid.getCell(coord);
-
-        if (cell == null) return CellState.WATER;
-
-        return CellState.WATER;
-    }
-
-    public CellState getCellStateAfterAttack(int row, int col) {
-        if (enemyGrid == null) return CellState.WATER;
-
-        Coordinates coord = new Coordinates(row, col);
-        Model.Map.GridCell cell = enemyGrid.getCell(coord);
-
-        if (cell == null) return CellState.WATER;
-
-        if (!cell.isHit()) {
-            return CellState.WATER;
-        }
-
-        if (!cell.isOccupied()) {
-            return CellState.MISS;
-        } else {
-            return CellState.HIT;
-        }
-    }
-
     public Grid getGrid() {
         return enemyGrid;
     }
@@ -368,11 +335,25 @@ public class GameController implements Observer {
 
     public CellState getPlayerCellState(int row, int col) {
         if (playerGrid == null) return CellState.WATER;
-        Coordinates coord = new Coordinates(row, col);
-        Model.Map.GridCell cell = playerGrid.getCell(coord);
+
+        Coordinates cord = new Coordinates(row, col);
+        Model.Map.GridCell cell = playerGrid.getCell(cord);
+
         if (cell == null) return CellState.WATER;
 
-        if (cell.isIslandCell()) return CellState.ISLAND;
+        if (cell.isIslandCell()) {
+            if (!cell.isHit()) {
+                return CellState.ISLAND;
+            } else {
+                if (cell.isOccupied()) {
+                    return CellState.ITEM_FOUND;
+                } else {
+                    return CellState.EXPLORED;
+                }
+            }
+        }
+
+
 
         if (!cell.isHit()) {
             if (cell.isOccupied()) {
@@ -396,8 +377,8 @@ public class GameController implements Observer {
     public CellState getEnemyCellState(int row, int col) {
         if (enemyGrid == null) return CellState.WATER;
 
-        Coordinates coord = new Coordinates(row, col);
-        Model.Map.GridCell cell = enemyGrid.getCell(coord);
+        Coordinates cord = new Coordinates(row, col);
+        Model.Map.GridCell cell = enemyGrid.getCell(cord);
 
         if (cell == null) return CellState.WATER;
 
@@ -419,8 +400,7 @@ public class GameController implements Observer {
             if (!cell.isOccupied()) {
                 return CellState.MISS;
             } else {
-                if (cell.getEntity() instanceof Model.Boat.Boat) {
-                    Model.Boat.Boat boat = (Model.Boat.Boat) cell.getEntity();
+                if (cell.getEntity() instanceof Boat boat) {
                     if (boat.isSunk()) {
                         return CellState.SUNK;
                     }
@@ -453,14 +433,14 @@ public class GameController implements Observer {
     }
 
     // Dévie les coordonnées de 5 cases avec wrapping (effet tornade)
-    public Coordinates applyTornadoEffect(Coordinates originalCoord) {
+    public Coordinates applyTornadoEffect(Coordinates originalCord) {
         int gridSize = 10;
         if (config != null) {
             gridSize = config.getGridSize();
         }
 
-        int newRow = (originalCoord.getRow() + 5) % gridSize;
-        int newCol = (originalCoord.getColumn() + 5) % gridSize;
+        int newRow = (originalCord.getRow() + 5) % gridSize;
+        int newCol = (originalCord.getColumn() + 5) % gridSize;
 
         return new Coordinates(newRow, newCol);
     }
@@ -471,22 +451,29 @@ public class GameController implements Observer {
         placeEntityRandomly(new Model.Trap.Tornado(), enemyGrid);
     }
 
-    boolean placeEntityRandomly(Model.GridEntity entity, Grid grid) {
+    void placeEntityRandomly(GridEntity entity, Grid grid) {
         int attempts = 0;
 
         while (attempts < 100) {
             int row = (int) (Math.random() * grid.getSize());
             int col = (int) (Math.random() * grid.getSize());
-            Coordinates startCoord = new Coordinates(row, col);
+            Coordinates startCord = new Coordinates(row, col);
 
-            Model.Map.GridCell cell = grid.getCell(startCoord);
+            Model.Map.GridCell cell = grid.getCell(startCord);
 
             if (cell != null && !cell.isOccupied() && !cell.isIslandCell()) {
                 cell.setEntity(entity);
-                return true;
+                return;
             }
             attempts++;
         }
-        return false;
+    }
+
+    public int getPlayerAliveBoatsCount() {
+        return humanPlayer.getAliveBoatsCount();
+    }
+
+    public int getComputerAliveBoatsCount() {
+        return computerPlayer.getAliveBoatsCount();
     }
 }

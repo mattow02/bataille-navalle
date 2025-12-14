@@ -4,20 +4,15 @@ import Model.Boat.BoatType;
 import Model.GameConfiguration;
 import java.util.Map;
 
-public class ConfigurationController implements Observer {
-    private GameController mainController;
+public record ConfigurationController(GameController mainController) implements Observer {
 
-    public ConfigurationController(GameController mainController) {
-        this.mainController = mainController;
-    }
-
-    public void handleConfigurationComplete(Map<BoatType, Integer> boatCounts, boolean isIslandMode) {
+    public void handleConfigurationComplete(Map<BoatType, Integer> boatCounts, boolean isIslandMode, int aiLevel) {
         GameConfiguration config = new GameConfiguration(
                 10,
                 boatCounts,
                 isIslandMode,
                 0,
-                1,
+                aiLevel,
                 1
         );
 

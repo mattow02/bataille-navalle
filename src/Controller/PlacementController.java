@@ -19,10 +19,10 @@ import java.util.Map;
 import java.util.Queue;
 
 public class PlacementController implements Observer {
-    private GameController mainController;
-    private Grid playerGrid;
+    private final GameController mainController;
+    private final Grid playerGrid;
     // File d'attente des bateaux et pièges à placer
-    private Queue<GridEntity> itemsToPlace;
+    private final Queue<GridEntity> itemsToPlace;
     private GridEntity currentItem;
 
     private Orientation currentOrientation;
@@ -74,14 +74,14 @@ public class PlacementController implements Observer {
     public void handleGridClick(int row, int col) {
         if (currentItem == null) return;
 
-        Coordinates coord = new Coordinates(row, col);
+        Coordinates cord = new Coordinates(row, col);
         boolean success = false;
 
         // Placement différent selon le type (bateau multi-cases ou piège 1 case)
         if (currentItem instanceof Boat) {
-            success = playerGrid.placeBoat((Boat) currentItem, coord, currentOrientation);
+            success = playerGrid.placeBoat((Boat) currentItem, cord, currentOrientation);
         } else {
-            Model.Map.GridCell cell = playerGrid.getCell(coord);
+            Model.Map.GridCell cell = playerGrid.getCell(cord);
             if (cell != null && !cell.isOccupied() && !cell.isIslandCell()) {
                 cell.setEntity(currentItem);
                 success = true;
@@ -118,11 +118,13 @@ public class PlacementController implements Observer {
     }
 
     public String getCurrentItemName() {
-        if (currentItem == null) return "";
-        if (currentItem instanceof Boat) return ((Boat) currentItem).name();
-        if (currentItem instanceof Model.Trap.BlackHole) return "Trou Noir (Piège)";
-        if (currentItem instanceof Model.Trap.Tornado) return "Tornade (Piège)";
-        return "Objet Inconnu";
+        return switch (currentItem) {
+            case null -> "";
+            case Boat boat -> boat.name();
+            case Model.Trap.BlackHole _ -> "Trou Noir (Piège)";
+            case Model.Trap.Tornado _ -> "Tornade (Piège)";
+            default -> "Objet Inconnu";
+        };
     }
 
     public int getCurrentItemSize() {
@@ -132,7 +134,7 @@ public class PlacementController implements Observer {
     public Orientation getOrientation() { return currentOrientation; }
     public int getGridSize() { return playerGrid.getSize(); }
 
-    private List<Observer> observers = new ArrayList<>();
+    private final List<Observer> observers = new ArrayList<>();
     public void addObserver(Observer o) { observers.add(o); }
     private void notifyObservers(String msg) { for(Observer o : observers) o.update(msg); }
     @Override public void update(Object event) {}

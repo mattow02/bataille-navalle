@@ -5,7 +5,7 @@ import Model.HitOutcome;
 import Model.Coordinates;
 
 public class HumanPlayer extends Player {
-    private String name;
+    private final String name;
     // Inventaire des armes spéciales
     private int bombCount = 0;
     private int sonarCount = 0;
@@ -49,11 +49,6 @@ public class HumanPlayer extends Player {
         return targetGrid.getCell(coordinates).strike(this);
     }
 
-    @Override
-    public HitOutcome handleIncomingFire(Coordinates coordinates) {
-        return ownGrid.getCell(coordinates).strike(null);
-    }
-
     public String getName() {
         return name;
     }
@@ -69,8 +64,7 @@ public class HumanPlayer extends Player {
         for(int r=0; r<grid.getSize(); r++) {
             for(int c=0; c<grid.getSize(); c++) {
                 Model.Map.GridCell cell = grid.getCell(new Model.Coordinates(r, c));
-                if (cell.isOccupied() && cell.getEntity() instanceof Model.Boat.Submarine) {
-                    Model.Boat.Submarine sub = (Model.Boat.Submarine) cell.getEntity();
+                if (cell.isOccupied() && cell.getEntity() instanceof Model.Boat.Submarine sub) {
                     if (!sub.isSunk()) return true;
                 }
             }
