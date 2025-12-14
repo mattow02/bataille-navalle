@@ -82,18 +82,9 @@ Le chef d'orchestre. Il reçoit les actions de l'utilisateur, met à jour le Mod
 
 ---
 
-## 📸 Aperçu
-
-*(Tu pourras ajouter ici des captures d'écran de ton jeu une fois l'interface finie, par exemple :)*
-* *L'écran de configuration.*
-* *La grille de placement.*
-* *La grille de bataille.*
-
----
-
 ## 👤 Auteur
 
-**Matthieu** (et collaborateurs éventuels)
+**Matteo**
 * GitHub : [@mattow02](https://github.com/mattow02)
 
 ---
