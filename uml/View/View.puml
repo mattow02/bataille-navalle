@@ -1,0 +1,12 @@
+@startuml
+!include View_Core.puml
+!include View_Model.puml
+!include View_Component.puml
+!include View_Screen.puml
+
+!include View_Core_Links.puml
+!include View_Model_Links.puml
+!include View_Component_Links.puml
+!include View_Screen_Links.puml
+@enduml
+

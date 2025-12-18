@@ -1,0 +1,12 @@
+@startuml
+Controller.Placement.IPlacementController ..> View.Model.CellState
+Controller.Placement.PlacementController "1" o-- "1" Controller.Core.IGameControllerCoordinator : mainController
+Controller.Placement.PlacementController ..> Model.Boat.Boat
+Controller.Placement.PlacementController ..> Model.Coordinates
+Controller.Placement.PlacementController "1" o-- "1" Model.Games.GameSetup : game
+Controller.Placement.PlacementController ..> Model.GridEntity
+Controller.Placement.PlacementController ..> Model.Orientation
+Controller.Placement.PlacementController ..> View.Model.CellState
+Controller.Placement.PlacementController "1" o-- "1" View.PlacementViewInterface : view
+@enduml
+

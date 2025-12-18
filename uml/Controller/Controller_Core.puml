@@ -1,0 +1,28 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+skinparam style strictuml
+hide enum methods
+
+package Controller.Core {
+  interface IGameController {
+    + handlePlayerAttack(row: int, col: int): void
+    + selectWeapon(weaponId: String): void
+    + selectWeapon(type: WeaponType): void
+    + startApplication(): void
+    + restartApplication(): void
+    + quitApplication(): void
+    + showEndGame(stats: EndGameStats): void
+  }
+
+  interface IGameControllerCoordinator {
+    + log(message: String): void
+    + showBattleView(): void
+    + getPlayerCellState(row: int, col: int): CellState
+    + handleConfigurationComplete(config: GameConfiguration): void
+  }
+}
+@enduml
+

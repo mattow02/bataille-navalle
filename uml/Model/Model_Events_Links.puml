@@ -1,0 +1,6 @@
+@startuml
+Model.Events.GameEvent ..> Model.Coordinates
+Model.Events.GameEvent ..> Model.Weapons.WeaponResult
+Model.Events.GameEvent ..> Model.Events.GameEventType
+@enduml
+

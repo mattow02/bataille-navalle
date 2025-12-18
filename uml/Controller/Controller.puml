@@ -1,0 +1,17 @@
+@startuml
+skinparam style strictuml
+hide enum methods
+
+!include Controller_Core.puml
+!include Controller_Core_Links.puml
+
+!include Controller_Config.puml
+!include Controller_Config_Links.puml
+
+!include Controller_Game.puml
+!include Controller_Game_Links.puml
+
+!include Controller_Placement.puml
+!include Controller_Placement_Links.puml
+@enduml
+

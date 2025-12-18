@@ -1,0 +1,152 @@
+@startuml
+ ' Relations Model
+
+Model.GameObserver ..> Model.Weapons.WeaponResult
+Model.GridEntity ..> Model.Map.Grid
+Model.GridEntity ..> Model.Player.Player
+Model.SpecialEffectContext ..> Model.Map.Grid
+Model.SpecialEffectContext ..> Model.Player.Player
+
+Model.Boat.Boat ..> Model.GridEntity
+Model.Boat.Boat ..> Model.Coordinates
+Model.Boat.Boat ..> Model.Map.Grid
+Model.Boat.Boat ..> Model.Orientation
+Model.Boat.Boat ..> Model.HitOutcome
+Model.Boat.AbstractBoat ..> Model.HitOutcome
+Model.Boat.AbstractBoat ..> Model.Player.Player
+
+Model.Map.Grid ..> Model.Boat.Boat
+Model.Map.Grid ..> Model.Coordinates
+Model.Map.Grid ..> Model.Orientation
+Model.Map.Grid "1" *-- "*" Model.Map.GridCell : cells
+Model.Map.GridCell ..> Model.GridEntity
+Model.Map.GridCell ..> Model.HitOutcome
+Model.Map.GridCell ..> Model.Player.Player
+
+Model.Games.Game ..> Model.Boat.Boat
+Model.Games.Game ..> Model.Boat.BoatFactory
+Model.Games.Game ..> Model.Coordinates
+Model.Games.Game ..> Model.GameObserver
+Model.Games.Game "1" *-- "2" Model.Map.Grid
+Model.Games.Game ..> Model.Orientation
+Model.Games.Game "1" o-- "1" Model.Player.ComputerPlayer : computerPlayer
+Model.Games.Game "1" o-- "1" Model.Player.HumanPlayer : humanPlayer
+Model.Games.Game ..> Model.Player.PlayerFactory
+Model.Games.Game ..> Model.Player.ShotStrategyFactory
+Model.Games.Game ..> Model.Trap.TrapFactory
+Model.Games.Game ..> Model.Weapons.WeaponType
+Model.Games.Game "1" *-- "1" Model.Games.TurnService : turnService
+Model.Games.TurnService ..> Model.Coordinates
+Model.Games.TurnService ..> Model.GameObserver
+Model.Games.TurnService ..> Model.HitOutcome
+Model.Games.TurnService ..> Model.Map.Grid
+Model.Games.TurnService ..> Model.Player.ComputerPlayer
+Model.Games.TurnService ..> Model.Player.HumanPlayer
+Model.Games.TurnService ..> Model.Player.Player
+Model.Games.TurnService ..> Model.SpecialEffectContext
+Model.Games.TurnService ..> Model.Weapons.WeaponResult
+Model.Games.TurnService ..> Model.Weapons.Weapon
+Model.Games.RandomGridInitializer ..> Model.Boat.Boat
+Model.Games.RandomGridInitializer ..> Model.Boat.BoatType
+Model.Games.RandomGridInitializer ..> Model.Coordinates
+Model.Games.RandomGridInitializer ..> Model.GridEntity
+Model.Games.RandomGridInitializer ..> Model.Map.Grid
+Model.Games.RandomGridInitializer ..> Model.Orientation
+Model.Games.RandomGridInitializer ..> Model.Trap.TrapFactory
+Model.Games.RandomGridInitializer ..> Model.Island.IslandItemFactory
+Model.Games.PlacementManager ..> Model.Boat.Boat
+Model.Games.PlacementManager ..> Model.Boat.BoatFactory
+Model.Games.PlacementManager ..> Model.Boat.BoatType
+Model.Games.PlacementManager ..> Model.Coordinates
+Model.Games.PlacementManager ..> Model.GridEntity
+Model.Games.PlacementManager ..> Model.Map.Grid
+Model.Games.PlacementManager ..> Model.Orientation
+Model.Games.PlacementManager ..> Model.Trap.TrapFactory
+Model.Games.Game "1" o-- "1" Model.Games.PlacementManager : placementManager
+Model.Games.GameCommander ..> Model.Coordinates
+Model.Games.GameCommander ..> Model.Weapons.Weapon
+Model.Games.GameConfigValidator ..> Model.Boat.BoatType
+Model.Games.GameConfiguration ..> Model.Boat.BoatType
+Model.Games.GameObservable ..> Model.GameObserver
+
+Model.Player.RandomShotStrategy ..> Model.Coordinates
+Model.Player.RandomShotStrategy ..> Model.HitOutcome
+Model.Player.RandomShotStrategy ..> Model.Map.Grid
+Model.Player.TargetedShotStrategy ..> Model.Coordinates
+Model.Player.TargetedShotStrategy ..> Model.HitOutcome
+Model.Player.TargetedShotStrategy ..> Model.Map.Grid
+Model.Player.ShotStrategy ..> Model.Coordinates
+Model.Player.ShotStrategy ..> Model.HitOutcome
+Model.Player.ShotStrategy ..> Model.Map.Grid
+Model.Player.ComputerPlayer ..> Model.Coordinates
+Model.Player.ComputerPlayer ..> Model.HitOutcome
+Model.Player.ComputerPlayer ..> Model.Map.Grid
+Model.Player.ComputerPlayer ..> Model.Weapons.WeaponType
+Model.Player.HumanPlayer ..> Model.Coordinates
+Model.Player.HumanPlayer ..> Model.HitOutcome
+Model.Player.HumanPlayer ..> Model.Map.Grid
+Model.Player.HumanPlayer ..> Model.Weapons.WeaponType
+Model.Player.Player ..> Model.Coordinates
+Model.Player.Player ..> Model.HitOutcome
+Model.Player.Player ..> Model.Map.Grid
+Model.Player.Player ..> Model.Weapons.WeaponType
+Model.Player.PlayerFactory ..> Model.Map.Grid
+Model.Player.StandardPlayerFactory ..> Model.Map.Grid
+
+Model.Weapons.WeaponSelectionService ..> Model.Games.GameReader
+Model.Weapons.Bomb ..> Model.Coordinates
+Model.Weapons.Bomb ..> Model.HitOutcome
+Model.Weapons.Bomb ..> Model.Map.Grid
+Model.Weapons.Bomb ..> Model.Player.Player
+Model.Weapons.Missile ..> Model.Coordinates
+Model.Weapons.Missile ..> Model.HitOutcome
+Model.Weapons.Missile ..> Model.Map.Grid
+Model.Weapons.Missile ..> Model.Player.Player
+Model.Weapons.Sonar ..> Model.Coordinates
+Model.Weapons.Sonar ..> Model.HitOutcome
+Model.Weapons.Sonar ..> Model.Map.Grid
+Model.Weapons.Sonar ..> Model.Player.Player
+Model.Weapons.Weapon ..> Model.Coordinates
+Model.Weapons.Weapon ..> Model.Map.Grid
+Model.Weapons.Weapon ..> Model.Player.Player
+Model.Weapons.WeaponResult ..> Model.HitOutcome
+
+Model.Trap.Tornado ..> Model.HitOutcome
+Model.Trap.Tornado ..> Model.Player.Player
+Model.Trap.Tornado ..> Model.SpecialEffectContext
+Model.Trap.Tornado ..> Model.SpecialEffectEntity
+Model.Trap.BlackHole ..> Model.HitOutcome
+Model.Trap.BlackHole ..> Model.Player.Player
+Model.Trap.BlackHole ..> Model.SpecialEffectContext
+Model.Trap.BlackHole ..> Model.SpecialEffectEntity
+Model.Trap.TrapFactory ..> Model.GridEntity
+Model.Trap.DefaultTrapFactory ..> Model.GridEntity
+Model.Trap.DefaultTrapFactory "1" ..> "*" Model.Trap.BlackHole : createBlackHole
+Model.Trap.DefaultTrapFactory "1" ..> "*" Model.Trap.Tornado : createTornado
+
+Model.Island.IslandItem ..> Model.GridEntity
+Model.Island.IslandItem ..> Model.HitOutcome
+Model.Island.IslandItem ..> Model.Player.Player
+Model.Island.IslandEmpty ..> Model.HitOutcome
+Model.Island.IslandEmpty ..> Model.Player.Player
+Model.Island.IslandEmpty ..> Model.SpecialEffectContext
+Model.Island.IslandEmpty ..> Model.SpecialEffectEntity
+Model.Island.BombItem ..> Model.HitOutcome
+Model.Island.BombItem ..> Model.Player.Player
+Model.Island.BombItem ..> Model.SpecialEffectContext
+Model.Island.BombItem ..> Model.SpecialEffectEntity
+Model.Island.SonarItem ..> Model.HitOutcome
+Model.Island.SonarItem ..> Model.Player.Player
+Model.Island.SonarItem ..> Model.SpecialEffectContext
+Model.Island.SonarItem ..> Model.SpecialEffectEntity
+Model.Island.DefaultIslandItemFactory ..> Model.GridEntity
+Model.Island.DefaultIslandItemFactory "1" o-- "1" Model.Trap.TrapFactory : trapFactory
+Model.Island.DefaultIslandItemFactory "1" ..> "*" Model.Island.BombItem : createBombItem
+Model.Island.DefaultIslandItemFactory "1" ..> "*" Model.Island.SonarItem : createSonarItem
+Model.Island.DefaultIslandItemFactory "1" ..> "*" Model.Island.IslandEmpty : createIslandEmpty
+Model.Island.IslandItemFactory ..> Model.GridEntity
+
+Model.Events.GameEvent ..> Model.Coordinates
+Model.Events.GameEvent ..> Model.Weapons.WeaponResult
+@enduml
+

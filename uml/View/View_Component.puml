@@ -1,0 +1,39 @@
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+
+package View.Component {
+  class BattleGrid {
+    - gridPanel: JPanel
+    - gridCells: GridCell[][]
+    - gridSize: int
+    - listener: GridInteractionListener
+    + BattleGrid(gridSize: int, listener: GridInteractionListener)
+    + updateGrid(newStates: CellState[][]): void
+    + getGridPanel(): JPanel
+  }
+
+  class GridCell {
+    - cellPanel: JPanel
+    + GridCell()
+    + getCellPanel(): JPanel
+    + setState(state: CellState): void
+  }
+
+  interface GridInteractionListener {
+    + onCellClicked(row: int, col: int): void
+  }
+
+  class InfoPanel {
+    - turnLabel: JLabel
+    - playerBoatsLabel: JLabel
+    - enemyBoatsLabel: JLabel
+    - inventoryLabel: JLabel
+    - logArea: JTextArea
+    + InfoPanel()
+    + updateStats(info: BattleInfo): void
+    + addLog(message: String): void
+  }
+}
+

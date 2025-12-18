@@ -1,0 +1,78 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+package Model {
+  class Coordinates <<record>> {
+    + Coordinates(row: int, column: int)
+    + toFormattedString(): String
+    + toString(): String
+    + isValid(gridSize: int): boolean
+  }
+
+  interface GameObserver {
+    + onGameInitialized(): void
+    + onRefreshRequested(): void
+    + onPlayerTurnEnded(): void
+    + onGameOver(playerWon: boolean, turnCount: int, playerAliveBoats: int, computerAliveBoats: int): void
+    + onWeaponFired(result: WeaponResult): void
+    + onShotResolved(target: Coordinates, outcome: HitOutcome, isHuman: boolean): void
+    + onTornadoEffect(coords: Coordinates): void
+    + onTornadoHit(): void
+    + onBlackHoleTrigger(): void
+    + onBlackHoleBackfire(coords: Coordinates): void
+    + onBlackHoleAbsorbed(coords: Coordinates): void
+    + onItemBombFound(): void
+    + onItemSonarFound(): void
+  }
+
+  interface GridEntity {
+    + handleImpact(attacker: Player, segmentIndex: int): HitOutcome
+    + entityType(): String
+    + size(): int
+    + applySpecialEffectIfPresent(context: SpecialEffectContext, target: Coordinates, isHumanAttacker: boolean): void
+    + isBoat(): boolean
+    + isDetectableBySonar(): boolean
+    + isSunk(): boolean
+    + getDisplayName(): String
+    + placeOnGridWithOrientation(grid: Grid, startCoord: Coordinates, orientation: Orientation): boolean
+    + isSubmarine(): boolean
+  }
+
+  enum HitOutcome {
+    + MISS
+    + HIT
+    + SUNK
+    + TRAP_TRIGGERED
+    + ACQUIRED_WEAPON
+    + INVALID
+  }
+
+  enum Orientation {
+    + HORIZONTAL
+    + VERTICAL
+  }
+
+  interface SpecialEffectContext {
+    + playerGrid(): Grid
+    + enemyGrid(): Grid
+    + humanPlayer(): Player
+    + computerPlayer(): Player
+    + notifyTornadoHit(): void
+    + grantTornadoTurnsToAttacker(isHumanAttacker: boolean, turns: int): void
+    + notifyBlackHoleTrigger(): void
+    + notifyBlackHoleBackfire(coords: Coordinates): void
+    + notifyBlackHoleAbsorbed(coords: Coordinates): void
+    + notifyItemBombFound(): void
+    + notifyItemSonarFound(): void
+  }
+
+  interface SpecialEffectEntity extends GridEntity {
+    + applySpecialEffect(context: SpecialEffectContext, target: Coordinates, isHumanAttacker: boolean): void
+  }
+
+  SpecialEffectEntity --|> GridEntity
+}
+@enduml
+

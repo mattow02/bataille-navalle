@@ -1,0 +1,61 @@
+@startuml
+Model.Games.Game ..> Model.Boat.Boat
+Model.Games.Game ..> Model.Boat.BoatFactory
+Model.Games.Game ..> Model.Coordinates
+Model.Games.Game ..> Model.GameObserver
+Model.Games.Game "1" *-- "2" Model.Map.Grid
+Model.Games.Game ..> Model.Map.CellStateInfo
+Model.Games.Game ..> Model.Orientation
+Model.Games.Game "1" o-- "1" Model.Player.ComputerPlayer
+Model.Games.Game "1" o-- "1" Model.Player.HumanPlayer
+Model.Games.Game ..> Model.Player.PlayerFactory
+Model.Games.Game ..> Model.Player.ShotStrategyFactory
+Model.Games.Game ..> Model.Trap.TrapFactory
+Model.Games.Game ..> Model.Weapons.WeaponType
+Model.Games.Game ..> Model.Weapons.Weapon
+
+Model.Games.TurnService ..> Model.Coordinates
+Model.Games.TurnService ..> Model.GameObserver
+Model.Games.TurnService ..> Model.HitOutcome
+Model.Games.TurnService ..> Model.Map.Grid
+Model.Games.TurnService ..> Model.Player.ComputerPlayer
+Model.Games.TurnService ..> Model.Player.HumanPlayer
+Model.Games.TurnService ..> Model.Player.Player
+Model.Games.TurnService ..> Model.SpecialEffectContext
+Model.Games.TurnService ..> Model.Weapons.WeaponResult
+Model.Games.TurnService ..> Model.Weapons.Weapon
+
+Model.Games.RandomGridInitializer ..> Model.Boat.Boat
+Model.Games.RandomGridInitializer ..> Model.Boat.BoatFactory
+Model.Games.RandomGridInitializer ..> Model.Boat.BoatType
+Model.Games.RandomGridInitializer ..> Model.Coordinates
+Model.Games.RandomGridInitializer ..> Model.GridEntity
+Model.Games.RandomGridInitializer ..> Model.Map.Grid
+Model.Games.RandomGridInitializer ..> Model.Orientation
+Model.Games.RandomGridInitializer ..> Model.Trap.TrapFactory
+Model.Games.RandomGridInitializer ..> Model.Island.IslandItemFactory
+Model.Games.RandomGridInitializer ..> Model.Island.IslandEmpty
+
+Model.Games.PlacementManager ..> Model.Boat.Boat
+Model.Games.PlacementManager ..> Model.Boat.BoatFactory
+Model.Games.PlacementManager ..> Model.Boat.BoatType
+Model.Games.PlacementManager ..> Model.Coordinates
+Model.Games.PlacementManager ..> Model.GridEntity
+Model.Games.PlacementManager ..> Model.Map.Grid
+Model.Games.PlacementManager ..> Model.Orientation
+Model.Games.PlacementManager ..> Model.Trap.TrapFactory
+
+Model.Games.GameConfigValidator ..> Model.Boat.BoatType
+Model.Games.GameConfiguration ..> Model.Boat.BoatType
+Model.Games.GameCommander ..> Model.Coordinates
+Model.Games.GameCommander ..> Model.Weapons.Weapon
+Model.Games.GameReader ..> Model.Coordinates
+Model.Games.GameReader ..> Model.Map.CellStateInfo
+Model.Games.GameSetup ..> Model.Boat.Boat
+Model.Games.GameSetup ..> Model.GridEntity
+Model.Games.GameSetup ..> Model.Coordinates
+Model.Games.GameSetup ..> Model.Orientation
+Model.Games.GridInitializer ..> Model.Map.Grid
+Model.Games.GridInitializer ..> Model.Games.GameConfiguration
+@enduml
+

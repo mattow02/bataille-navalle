@@ -2,23 +2,16 @@ package Model.Island;
 
 import Model.HitOutcome;
 import Model.Player.Player;
-import Model.Coordinates;
-import Model.GridEntity;
+import Model.SpecialEffectContext;
+import Model.SpecialEffectEntity;
 
-public class SonarItem implements IslandItem {
+/** Bonus d'île offrant un sonar. */
+public class SonarItem implements IslandItem, SpecialEffectEntity {
 
     @Override
     public HitOutcome onAcquired(Player player) {
-        if (player instanceof Model.Player.HumanPlayer) {
-            ((Model.Player.HumanPlayer) player).addSonar();
-        }
-
+        player.addAmmo(Model.Weapons.WeaponType.SONAR);
         return HitOutcome.ACQUIRED_WEAPON;
-    }
-
-
-    public HitOutcome handleImpact(Player attacker, Coordinates coordinates) {
-        return onAcquired(attacker);
     }
 
     @Override
@@ -27,7 +20,17 @@ public class SonarItem implements IslandItem {
     }
 
     @Override
+    public String getDisplayName() {
+        return "Sonar (Bonus)";
+    }
+
+    @Override
     public int size() {
         return 1;
+    }
+
+    @Override
+    public void applySpecialEffect(SpecialEffectContext context, Model.Coordinates target, boolean isHumanAttacker) {
+        context.notifyItemSonarFound();
     }
 }

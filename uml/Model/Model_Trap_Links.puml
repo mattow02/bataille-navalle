@@ -1,0 +1,15 @@
+@startuml
+Model.Trap.TrapFactory ..> Model.GridEntity
+Model.Trap.BlackHole ..> Model.HitOutcome
+Model.Trap.BlackHole ..> Model.Player.Player
+Model.Trap.BlackHole ..> Model.SpecialEffectContext
+Model.Trap.BlackHole ..> Model.Coordinates
+Model.Trap.Tornado ..> Model.HitOutcome
+Model.Trap.Tornado ..> Model.Player.Player
+Model.Trap.Tornado ..> Model.SpecialEffectContext
+Model.Trap.Tornado ..> Model.Coordinates
+Model.Trap.DefaultTrapFactory ..> Model.GridEntity
+Model.Trap.DefaultTrapFactory o-- Model.Trap.BlackHole
+Model.Trap.DefaultTrapFactory o-- Model.Trap.Tornado
+@enduml
+

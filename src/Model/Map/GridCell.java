@@ -1,17 +1,13 @@
 package Model.Map;
 
-import Model.Coordinates;
 import Model.GridEntity;
 import Model.HitOutcome;
 import Model.Player.Player;
-import Model.Boat.Boat;
-import Model.Trap.BlackHole;
 
+/** Cellule individuelle d'une grille de jeu. */
 public class GridCell {
-    // Entité présente sur cette case (bateau, piège, item d'île)
     private GridEntity entity;
     private boolean isHit;
-    // Index du segment du bateau (pour les bateaux multi-cases)
     private int boatSegmentIndex = -1;
     private boolean isIslandCell;
 
@@ -53,7 +49,19 @@ public class GridCell {
         this.isHit = hit;
     }
 
-    // Gère un tir sur cette case : bateau, piège ou item d'île
+    public boolean isBoat() {
+        return entity != null && entity.isBoat();
+    }
+
+    public boolean isBoatSunk() {
+        if (!isBoat() || entity == null) return false;
+        return entity.isSunk();
+    }
+
+    public boolean isDetectableBySonar() {
+        return isOccupied() && entity.isDetectableBySonar();
+    }
+
     public HitOutcome strike(Player attacker) {
         if (isHit) {
             return HitOutcome.INVALID;
@@ -61,28 +69,7 @@ public class GridCell {
 
         this.isHit = true;
 
-        if (!isOccupied()) {
-            return HitOutcome.MISS;
-        }
-
-        // Bateau : utilise receiveHit avec l'index du segment
-        if (entity instanceof Boat boat) {
-            return boat.receiveHit(boatSegmentIndex);
-        }
-
-        // Piège ou item d'île : utilise handleImpact
-        if (entity != null) {
-            Coordinates fakeCoords = new Coordinates(0, 0);
-            HitOutcome outcome = entity.handleImpact(attacker, fakeCoords);
-
-            // Les pièges sont à usage unique
-            if (outcome == HitOutcome.TRAP_TRIGGERED) {
-                this.entity = null;
-            }
-
-            return outcome;
-        }
-
-        return HitOutcome.MISS;
+        if (!isOccupied()) return HitOutcome.MISS;
+        return entity.handleImpact(attacker, boatSegmentIndex);
     }
 }

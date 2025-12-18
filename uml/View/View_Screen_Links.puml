@@ -1,0 +1,33 @@
+View.Screen.BattleView --|> View.Core.BattleViewInterface
+View.Screen.BattleView "1" o-- "1" Controller.Core.IGameController : controller
+View.Screen.BattleView "1" *-- "2" View.Component.BattleGrid : battleGrids
+View.Screen.BattleView "1" *-- "1" View.Component.InfoPanel : infoPanel
+View.Screen.BattleView ..> View.Model.BattleInfo
+View.Screen.BattleView ..> View.Model.CellState
+View.Screen.BattleView ..> View.Model.EndGameStats
+View.Screen.BattleView ..> View.Model.WeaponViewModel
+
+View.Screen.ConfigurationView --|> View.Core.GameView
+View.Screen.ConfigurationView "1" o-- "1" Controller.Config.IConfigurationController : controller
+View.Screen.ConfigurationView ..> View.Model.BoatTypeViewModel
+
+View.Screen.EndGameView --|> View.Core.GameView
+View.Screen.EndGameView "1" o-- "1" Controller.Core.IGameController : controller
+View.Screen.EndGameView ..> View.Model.EndGameStats
+
+View.Screen.PlacementView --|> View.Core.PlacementViewInterface
+View.Screen.PlacementView "1" o-- "1" Controller.Placement.IPlacementController : controller
+View.Screen.PlacementView ..> Controller.Placement.PlacementError
+View.Screen.PlacementView "1" *-- "*" View.Component.GridCell : gridCells
+View.Screen.PlacementView ..> View.Model.CellState
+
+View.Screen.SwingUiExecutor --|> Controller.Game.UiExecutor
+
+View.Screen.SwingViewFactory --|> Controller.Game.GameViewFactory
+View.Screen.SwingViewFactory "1" o-- "1" Controller.Config.ConfigurationController : configurationController
+View.Screen.SwingViewFactory "1" o-- "1" Controller.Placement.PlacementController : placementController
+View.Screen.SwingViewFactory "1" o-- "1" Controller.Core.IGameController : controller
+View.Screen.SwingViewFactory ..> View.Screen.BattleView
+View.Screen.SwingViewFactory ..> View.Screen.EndGameView
+View.Screen.SwingViewFactory ..> View.Model.EndGameStats
+

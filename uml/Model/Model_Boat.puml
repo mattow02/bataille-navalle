@@ -1,0 +1,83 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+package Model.Boat {
+  interface Boat {
+    + isSunk(): boolean
+    + receiveHit(index: int): HitOutcome
+    + size(): int
+    + name(): String
+    + getType(): BoatType
+    + placeOnGrid(grid: Grid, startCoord: Coordinates, orientation: Orientation): boolean
+    + placeOnGridWithOrientation(grid: Grid, startCoord: Coordinates, orientation: Orientation): boolean
+  }
+
+  interface BoatFactory {
+    + create(type: BoatType): Boat
+  }
+
+  enum BoatType {
+    - size: int
+    - name: String
+    + getSize(): int
+    + getName(): String
+  }
+
+  abstract class AbstractBoat {
+    # type: BoatType
+    # hits: boolean[]
+    # sunk: boolean
+    + AbstractBoat(type: BoatType)
+    + receiveHit(index: int): HitOutcome
+    - checkIfSunk(): void
+    + isSunk(): boolean
+    + size(): int
+    + name(): String
+    + getType(): BoatType
+    + entityType(): String
+    + isBoat(): boolean
+    + isDetectableBySonar(): boolean
+    + handleImpact(attacker: Player, segmentIndex: int): HitOutcome
+    + getDisplayName(): String
+  }
+
+  class AircraftCarrier {
+    + AircraftCarrier()
+  }
+
+  class Cruiser {
+    + Cruiser()
+  }
+
+  class Destroyer {
+    + Destroyer()
+  }
+
+  class Submarine {
+    + Submarine()
+    + isSubmarine(): boolean
+  }
+
+  class TorpedoBoat {
+    + TorpedoBoat()
+  }
+
+  class SimpleBoatFactory {
+    - boatRegistry: Map<BoatType, Supplier<Boat>>
+    + SimpleBoatFactory()
+    - initRegistry(): void
+    + create(type: BoatType): Boat
+  }
+
+  AbstractBoat ..|> Boat
+  AircraftCarrier --|> AbstractBoat
+  Cruiser --|> AbstractBoat
+  Destroyer --|> AbstractBoat
+  Submarine --|> AbstractBoat
+  TorpedoBoat --|> AbstractBoat
+  SimpleBoatFactory ..|> BoatFactory
+}
+@enduml
+

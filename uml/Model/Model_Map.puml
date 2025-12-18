@@ -1,0 +1,62 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+package Model.Map {
+  class Grid {
+    - size: int
+    - cells: GridCell[][]
+    + Grid(size: int)
+    - initializeGrid(): void
+    + markIslandZone(startRow: int, startCol: int): void
+    + placeBoat(boat: Boat, startCord: Coordinates, orientation: Orientation): boolean
+    - isValidPlacement(positions: List<Coordinates>): boolean
+    - calculateBoatPositions(boat: Boat, start: Coordinates, orientation: Orientation): List<Coordinates>
+    - getCell(cord: Coordinates): GridCell
+    + getCellStateInfo(coord: Coordinates): CellStateInfo
+    + isCellHit(cord: Coordinates): boolean
+    + getSize(): int
+    + placeEntity(entity: GridEntity, cord: Coordinates): boolean
+    + placeIslandEntity(entity: GridEntity, coord: Coordinates): boolean
+    + isIslandCellFree(coord: Coordinates): boolean
+    + isIslandCell(coord: Coordinates): boolean
+    + isDetectableBySonar(coord: Coordinates): boolean
+    + extractEntity(coord: Coordinates): GridEntity
+    + strikeCell(cord: Coordinates, attacker: Player): HitOutcome
+    + areAllBoatsSunk(): boolean
+    + getAliveBoatsCount(): int
+    + isSubmarineAlive(): boolean
+  }
+
+  class GridCell {
+    - entity: GridEntity
+    - isHit: boolean
+    - boatSegmentIndex: int
+    - isIslandCell: boolean
+    + GridCell()
+    + setBoatSegmentIndex(index: int): void
+    + isIslandCell(): boolean
+    + setIsIslandCell(isIslandCell: boolean): void
+    + isOccupied(): boolean
+    + getEntity(): GridEntity
+    + setEntity(entity: GridEntity): void
+    + isHit(): boolean
+    + setHit(hit: boolean): void
+    + isBoat(): boolean
+    + isBoatSunk(): boolean
+    + isDetectableBySonar(): boolean
+    + strike(attacker: Player): HitOutcome
+  }
+
+  class CellStateInfo <<record>> {
+    + isIslandCell(): boolean
+    + isHit(): boolean
+    + isOccupied(): boolean
+    + isBoat(): boolean
+    + isBoatSunk(): boolean
+    + fromGridCell(cell: GridCell): CellStateInfo
+  }
+}
+@enduml
+

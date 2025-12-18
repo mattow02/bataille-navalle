@@ -1,11 +1,12 @@
 package Model.Player;
 
-import Model.Map.Grid;
 import Model.Coordinates;
 import Model.HitOutcome;
+import Model.Map.Grid;
+import Model.Weapons.WeaponType;
 
+/** Joueur contrôlé par l'ordinateur. */
 public class ComputerPlayer extends Player {
-    // Stratégie de tir intelligente (ciblée autour des touches)
     private ShotStrategy shotStrategy;
 
     public ComputerPlayer(Grid ownGrid, Grid targetGrid) {
@@ -15,12 +16,24 @@ public class ComputerPlayer extends Player {
 
     @Override
     public HitOutcome fire(Coordinates coordinates) {
-        return targetGrid.getCell(coordinates).strike(this);
+        return strikeTarget(coordinates);
     }
 
-    // Choisit la prochaine cible selon le résultat du dernier tir
     public Coordinates chooseNextShot(HitOutcome lastOutcome) {
-        return shotStrategy.getNextShot(targetGrid, lastOutcome);
+        return shotStrategy.getNextShot(getTargetGrid(), lastOutcome);
+    }
+
+    @Override
+    public boolean hasAmmo(WeaponType type) {
+        return true;
+    }
+
+    @Override
+    public void consumeAmmo(WeaponType type) {
+    }
+
+    @Override
+    public void addAmmo(WeaponType type) {
     }
 
     public void setShotStrategy(ShotStrategy shotStrategy) {
@@ -33,10 +46,6 @@ public class ComputerPlayer extends Player {
     }
 
     public void notifyShotResult(Model.Coordinates target, Model.HitOutcome outcome) {
-        if (outcome == Model.HitOutcome.HIT || outcome == Model.HitOutcome.SUNK) {
-            if (shotStrategy instanceof TargetedShotStrategy) {
-                ((TargetedShotStrategy) shotStrategy).setLastHit(target);
-            }
-        }
+        shotStrategy.notifyShotResult(target, outcome);
     }
 }

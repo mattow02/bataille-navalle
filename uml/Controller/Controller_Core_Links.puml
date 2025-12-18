@@ -1,0 +1,7 @@
+@startuml
+Controller.Core.IGameController ..> Model.Weapons.WeaponType
+Controller.Core.IGameController ..> View.Model.EndGameStats
+Controller.Core.IGameControllerCoordinator ..> Model.Games.GameConfiguration
+Controller.Core.IGameControllerCoordinator ..> View.Model.CellState
+@enduml
+

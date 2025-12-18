@@ -1,0 +1,25 @@
+@startuml
+Model.Player.Player ..> Model.Coordinates
+Model.Player.Player ..> Model.HitOutcome
+Model.Player.Player ..> Model.Map.Grid
+Model.Player.Player ..> Model.Weapons.WeaponType
+Model.Player.HumanPlayer ..> Model.HitOutcome
+Model.Player.HumanPlayer ..> Model.Weapons.WeaponType
+Model.Player.HumanPlayer ..> Model.Map.Grid
+Model.Player.ComputerPlayer ..> Model.Coordinates
+Model.Player.ComputerPlayer ..> Model.HitOutcome
+Model.Player.ComputerPlayer ..> Model.Map.Grid
+Model.Player.ComputerPlayer ..> Model.Weapons.WeaponType
+Model.Player.ShotStrategy ..> Model.Coordinates
+Model.Player.ShotStrategy ..> Model.HitOutcome
+Model.Player.ShotStrategy ..> Model.Map.Grid
+Model.Player.RandomShotStrategy ..> Model.Coordinates
+Model.Player.RandomShotStrategy ..> Model.HitOutcome
+Model.Player.RandomShotStrategy ..> Model.Map.Grid
+Model.Player.TargetedShotStrategy ..> Model.Coordinates
+Model.Player.TargetedShotStrategy ..> Model.HitOutcome
+Model.Player.TargetedShotStrategy ..> Model.Map.Grid
+Model.Player.PlayerFactory ..> Model.Map.Grid
+Model.Player.StandardPlayerFactory ..> Model.Map.Grid
+@enduml
+

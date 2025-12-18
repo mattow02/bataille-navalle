@@ -1,0 +1,22 @@
+@startuml
+!include Model_Base.puml
+!include Model_Boat.puml
+!include Model_Boat_Links.puml
+!include Model_Map.puml
+!include Model_Map_Links.puml
+!include Model_Island.puml
+!include Model_Island_Links.puml
+!include Model_Trap.puml
+!include Model_Trap_Links.puml
+!include Model_Weapons.puml
+!include Model_Weapons_Links.puml
+!include Model_Player.puml
+!include Model_Player_Links.puml
+!include Model_Games.puml
+!include Model_Games_Links.puml
+!include Model_Events.puml
+!include Model_Events_Links.puml
+
+!include Model_Relations.puml
+@enduml
+

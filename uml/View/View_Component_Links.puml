@@ -1,0 +1,6 @@
+View.Component.BattleGrid "1" *-- "*" View.Component.GridCell : gridCells
+View.Component.BattleGrid ..> View.Component.GridInteractionListener
+View.Component.BattleGrid ..> View.Model.CellState
+View.Component.GridCell ..> View.Model.CellState
+View.Component.InfoPanel ..> View.Model.BattleInfo
+

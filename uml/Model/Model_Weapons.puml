@@ -1,0 +1,80 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+package Model.Weapons {
+  enum WeaponType {
+    + MISSILE
+    + BOMB
+    + SONAR
+  }
+
+  interface Weapon {
+    + use(attacker: Player, targetGrid: Grid, target: Coordinates): WeaponResult
+  }
+
+  class WeaponFactory {
+    - DEFAULT: WeaponFactory
+    - registry: Map<WeaponType, Supplier<Weapon>>
+    + WeaponFactory()
+    + WeaponFactory(registerDefaults: boolean)
+    + withDefaults(): WeaponFactory
+    - registerDefaults(): void
+    + register(type: WeaponType, supplier: Supplier<Weapon>): WeaponFactory
+    + create(type: WeaponType): Weapon
+    + registerWeapon(type: WeaponType, supplier: Supplier<Weapon>): void
+    + createWeapon(type: WeaponType): Weapon
+  }
+
+  enum WeaponSelectionStatus {
+    + ACTIVATED
+    + NOT_AVAILABLE
+    + INVALID_SUBMARINE
+  }
+
+  class WeaponSelectionResult <<record>> {
+    + WeaponSelectionResult(selectedType: WeaponType, status: WeaponSelectionStatus)
+    + selectedType(): WeaponType
+    + status(): WeaponSelectionStatus
+  }
+
+  interface WeaponSelectionRule {
+    + apply(type: WeaponType, game: GameReader): WeaponSelectionResult
+  }
+
+  class WeaponSelectionService {
+    - rules: Map<WeaponType, WeaponSelectionRule>
+    + WeaponSelectionService()
+    + registerRule(type: WeaponType, rule: WeaponSelectionRule): void
+    + evaluate(requested: WeaponType, game: GameReader): WeaponSelectionResult
+    - registerDefaultRules(): void
+  }
+
+  class Bomb {
+    + use(attacker: Player, targetGrid: Grid, target: Coordinates): WeaponResult
+  }
+
+  class Missile {
+    + use(attacker: Player, targetGrid: Grid, target: Coordinates): WeaponResult
+  }
+
+  class Sonar {
+    + use(attacker: Player, targetGrid: Grid, target: Coordinates): WeaponResult
+  }
+
+  class WeaponResult <<record>> {
+    + type(): WeaponType
+    + endsTurn(): boolean
+    + requiresRefresh(): boolean
+    + primaryOutcome(): HitOutcome
+    + value(): int
+    + success(): boolean
+  }
+
+  Bomb ..|> Weapon
+  Missile ..|> Weapon
+  Sonar ..|> Weapon
+}
+@enduml
+

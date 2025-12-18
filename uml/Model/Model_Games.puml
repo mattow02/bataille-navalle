@@ -1,0 +1,162 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+package Model.Games {
+  interface GameReader {
+    + getGridSize(): int
+    + getPlayerCellStateInfo(coord: Coordinates): CellStateInfo
+    + getEnemyCellStateInfo(coord: Coordinates): CellStateInfo
+    + getTurnCount(): int
+    + getPlayerAliveBoats(): int
+    + getComputerAliveBoats(): int
+    + getPlayerBombCount(): int
+    + getPlayerSonarCount(): int
+    + hasPlayerBomb(): boolean
+    + hasPlayerSonar(): boolean
+    + isPlayerSubmarineAlive(): boolean
+  }
+
+  interface GameCommander {
+    + isPlayerTurn(): boolean
+    + handleWeaponAttack(weapon: Weapon, target: Coordinates): void
+    + resolveComputerTurn(): void
+  }
+
+  interface GameObservable {
+    + addObserver(observer: GameObserver): void
+    + removeObserver(observer: GameObserver): void
+  }
+
+  interface GameSetup {
+    + init(config: GameConfiguration): void
+    + getBoatsToPlace(): List<Boat>
+    + getTrapsToPlace(): List<GridEntity>
+    + placeEntityOnPlayerGridByType(entity: GridEntity, coord: Coordinates, orientation: Orientation): boolean
+    + getGridSize(): int
+    + isIslandMode(): boolean
+  }
+
+  interface GridInitializer {
+    + setupGrids(config: GameConfiguration, playerGrid: Grid, enemyGrid: Grid): void
+  }
+
+  interface IGame {
+  }
+
+  interface TurnContext {
+    + playerGrid(): Grid
+    + enemyGrid(): Grid
+    + humanPlayer(): HumanPlayer
+    + computerPlayer(): ComputerPlayer
+    + getPlayerAliveBoats(): int
+    + getComputerAliveBoats(): int
+    + notifyObservers(notification: Consumer<GameObserver>): void
+  }
+
+  class Game {
+    - playerFactory: PlayerFactory
+    - gridInitializer: GridInitializer
+    - placementManager: PlacementManager
+    - observers: List<GameObserver>
+    - shotStrategyFactory: ShotStrategyFactory
+    - playerGrid: Grid
+    - enemyGrid: Grid
+    - humanPlayer: HumanPlayer
+    - computerPlayer: ComputerPlayer
+    - turnService: TurnService
+    - config: GameConfiguration
+    + Game(playerFactory: PlayerFactory, gridInitializer: GridInitializer, boatFactory: BoatFactory, shotStrategyFactory: ShotStrategyFactory, trapFactory: TrapFactory)
+    + init(config: GameConfiguration): void
+    + handleWeaponAttack(weapon: Weapon, target: Coordinates): void
+    + resolveComputerTurn(): void
+    + getGridSize(): int
+    + getPlayerAliveBoats(): int
+    + getComputerAliveBoats(): int
+    + getPlayerBombCount(): int
+    + getPlayerSonarCount(): int
+    + hasPlayerBomb(): boolean
+    + hasPlayerSonar(): boolean
+    + isPlayerSubmarineAlive(): boolean
+    + getBoatsToPlace(): List<Boat>
+    + isIslandMode(): boolean
+    + getTrapsToPlace(): List<GridEntity>
+    + placeBoatOnPlayerGrid(boat: Boat, startCoord: Coordinates, orientation: Orientation): boolean
+    + placeEntityOnPlayerGrid(entity: GridEntity, coord: Coordinates): boolean
+    + placeEntityOnPlayerGridByType(entity: GridEntity, coord: Coordinates, orientation: Orientation): boolean
+    + getPlayerCellStateInfo(coord: Coordinates): CellStateInfo
+    + getEnemyCellStateInfo(coord: Coordinates): CellStateInfo
+    + getTurnCount(): int
+    + isPlayerTurn(): boolean
+    + addObserver(observer: GameObserver): void
+    + removeObserver(observer: GameObserver): void
+  }
+
+  class TurnService {
+    - context: TurnContext
+    - isPlayerTurn: boolean
+    - turnCount: int
+    - playerTornadoTurnsLeft: int
+    - computerTornadoTurnsLeft: int
+    - lastComputerOutcome: HitOutcome
+    - effectContext: SpecialEffectContext
+    + TurnService(context: TurnContext, lock: ReentrantReadWriteLock)
+    + reset(): void
+    + handlePlayerAttack(weapon: Weapon, target: Coordinates): void
+    + resolveComputerTurn(): void
+    + isPlayerTurn(): boolean
+    + getTurnCount(): int
+  }
+
+  class RandomGridInitializer {
+    - boatFactory: BoatFactory
+    - trapFactory: TrapFactory
+    - islandItemFactory: IslandItemFactory
+    + RandomGridInitializer(boatFactory: BoatFactory, trapFactory: TrapFactory, islandItemFactory: IslandItemFactory, randomSupplier: Supplier<Double>, random: Random)
+    + withDefaults(): RandomGridInitializer
+    + setupGrids(config: GameConfiguration, playerGrid: Grid, enemyGrid: Grid): void
+  }
+
+  class PlacementManager {
+    - boatFactory: BoatFactory
+    - trapFactory: TrapFactory
+    + PlacementManager(boatFactory: BoatFactory, trapFactory: TrapFactory)
+    + createBoats(config: GameConfiguration): List<Boat>
+    + createTraps(islandMode: boolean): List<GridEntity>
+    + placeEntityOnGridByType(grid: Grid, entity: GridEntity, coord: Coordinates, orientation: Orientation): boolean
+  }
+
+  class GameConfigValidator {
+    + validate(boatCounts: Map<BoatType, Integer>): Result
+    + calculateTotalCells(boatCounts: Map<BoatType, Integer>): int
+  }
+
+  class Result <<record>> {
+    + Result(valid: boolean, errorMessage: String, totalCells: int)
+    + valid(): boolean
+    + errorMessage(): String
+    + totalCells(): int
+    + ok(totalCells: int): Result
+    + error(message: String, totalCells: int): Result
+  }
+
+  class GameConfiguration <<record>> {
+    + GameConfiguration(gridSize: int, boatCounts: Map<BoatType, Integer>, islandMode: boolean, computerShotLevel: int)
+    + gridSize(): int
+    + boatCounts(): Map<BoatType, Integer>
+    + islandMode(): boolean
+    + computerShotLevel(): int
+  }
+
+  IGame ..|> GameReader
+  IGame ..|> GameCommander
+  IGame ..|> GameSetup
+  IGame ..|> GameObservable
+  Game ..|> IGame
+  RandomGridInitializer ..|> GridInitializer
+  TurnService ..> TurnContext
+  GameConfigValidator ..> Result
+}
+@enduml
+

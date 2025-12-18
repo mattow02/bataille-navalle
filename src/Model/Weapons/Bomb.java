@@ -1,36 +1,40 @@
 package Model.Weapons;
 
 import Model.Coordinates;
+import Model.HitOutcome;
 import Model.Map.Grid;
 import Model.Player.Player;
-import Model.HitOutcome;
-import java.util.ArrayList;
-import java.util.List;
 
-public class Bomb {
-    // Explosion en croix : frappe 5 cases (centre + 4 directions)
-    public void use(Grid targetGrid, Coordinates target, Player attacker) {
-        int[][] offsets = {
-                {0, 0},  // Centre
-                {0, 1},  // Droite
-                {0, -1}, // Gauche
-                {1, 0},  // Bas
-                {-1, 0}  // Haut
-        };
+/** Arme de type bombe avec dégâts de zone. */
+public class Bomb implements Weapon {
 
-        for (int[] offset : offsets) {
-            int r = target.getRow() + offset[0];
-            int c = target.getColumn() + offset[1];
-            Coordinates impactCoord = new Coordinates(r, c);
+    @Override
+    public WeaponResult use(Player attacker, Grid targetGrid, Coordinates target) {
+        if (!attacker.hasAmmo(WeaponType.BOMB)) {
+            return new WeaponResult(WeaponType.BOMB, false, false, HitOutcome.INVALID, 0, false);
+        }
+        attacker.consumeAmmo(WeaponType.BOMB);
 
-            if (impactCoord.isValid(targetGrid.getSize())) {
-                Model.Map.GridCell cell = targetGrid.getCell(impactCoord);
+        int[][] offsets = {{0, 0}, {0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+        var hitSomething = false;
 
-                // La bombe ne peut pas frapper l'île
-                if (!cell.isIslandCell()) {
-                    cell.strike(attacker);
+        for (var offset : offsets) {
+            var impact = new Coordinates(target.row() + offset[0], target.column() + offset[1]);
+            if (impact.isValid(targetGrid.getSize()) && !targetGrid.isIslandCell(impact)) {
+                var outcome = targetGrid.strikeCell(impact, attacker);
+                if (outcome == HitOutcome.HIT || outcome == HitOutcome.SUNK) {
+                    hitSomething = true;
                 }
             }
         }
+
+        return new WeaponResult(
+                WeaponType.BOMB,
+                true,
+                true,
+                HitOutcome.HIT,
+                0,
+                hitSomething
+        );
     }
 }

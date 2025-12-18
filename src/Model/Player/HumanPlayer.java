@@ -1,14 +1,17 @@
 package Model.Player;
 
-import Model.Map.Grid;
-import Model.HitOutcome;
 import Model.Coordinates;
+import Model.HitOutcome;
+import Model.Map.Grid;
+import Model.Weapons.WeaponType;
 
+import java.util.EnumMap;
+import java.util.Map;
+
+/** Joueur humain avec gestion des munitions. */
 public class HumanPlayer extends Player {
     private final String name;
-    // Inventaire des armes spéciales
-    private int bombCount = 0;
-    private int sonarCount = 0;
+    private final Map<WeaponType, Integer> ammoByType = new EnumMap<>(WeaponType.class);
 
     public HumanPlayer(String name, Grid ownGrid, Grid targetGrid) {
         super(ownGrid, targetGrid);
@@ -16,37 +19,48 @@ public class HumanPlayer extends Player {
     }
 
     public void addBomb() {
-        this.bombCount++;
+        addAmmo(WeaponType.BOMB);
     }
 
-    public boolean hasBomb() {
-        return bombCount > 0;
+    public int getBombCount() {
+        return ammoByType.getOrDefault(WeaponType.BOMB, 0);
     }
-
-    public void useBomb() {
-        if (bombCount > 0) bombCount--;
-    }
-
-    public int getBombCount() { return bombCount; }
-
 
     public void addSonar() {
-        this.sonarCount++;
+        addAmmo(WeaponType.SONAR);
     }
 
-    public boolean hasSonar() {
-        return sonarCount > 0;
+    public int getSonarCount() {
+        return ammoByType.getOrDefault(WeaponType.SONAR, 0);
     }
 
-    public void useSonar() {
-        if (sonarCount > 0) sonarCount--;
+    @Override
+    public boolean hasAmmo(WeaponType type) {
+        if (type == WeaponType.MISSILE) {
+            return true;
+        }
+        return ammoByType.getOrDefault(type, 0) > 0;
     }
 
-    public int getSonarCount() { return sonarCount; }
+    @Override
+    public void consumeAmmo(WeaponType type) {
+        if (type == WeaponType.MISSILE) {
+            return;
+        }
+        ammoByType.computeIfPresent(type, (t, count) -> Math.max(0, count - 1));
+    }
+
+    @Override
+    public void addAmmo(WeaponType type) {
+        if (type == WeaponType.MISSILE) {
+            return;
+        }
+        ammoByType.merge(type, 1, Integer::sum);
+    }
 
     @Override
     public HitOutcome fire(Coordinates coordinates) {
-        return targetGrid.getCell(coordinates).strike(this);
+        return strikeTarget(coordinates);
     }
 
     public String getName() {
@@ -56,19 +70,5 @@ public class HumanPlayer extends Player {
     @Override
     public boolean isDefeated() {
         return areAllBoatsSunk();
-    }
-
-    // Vérifie si le sous-marin est encore en vie (nécessaire pour utiliser le sonar)
-    public boolean isSubmarineAlive() {
-        Grid grid = getOwnGrid();
-        for(int r=0; r<grid.getSize(); r++) {
-            for(int c=0; c<grid.getSize(); c++) {
-                Model.Map.GridCell cell = grid.getCell(new Model.Coordinates(r, c));
-                if (cell.isOccupied() && cell.getEntity() instanceof Model.Boat.Submarine sub) {
-                    if (!sub.isSunk()) return true;
-                }
-            }
-        }
-        return false;
     }
 }

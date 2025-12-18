@@ -1,0 +1,44 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+package Controller.Placement {
+  interface IPlacementController {
+    + handleGridClick(row: int, col: int): void
+    + toggleOrientation(): void
+    + getCellState(row: int, col: int): CellState
+    + getCurrentItemName(): String
+    + getCurrentItemSize(): int
+    + isHorizontal(): boolean
+    + getGridSize(): int
+  }
+
+  class PlacementController {
+    - mainController: IGameControllerCoordinator
+    - game: GameSetup
+    - itemsToPlace: Queue<GridEntity>
+    - currentItem: GridEntity
+    - currentOrientation: Orientation
+    - view: PlacementViewInterface
+    - onFinished: Runnable
+    + PlacementController(mainController: IGameControllerCoordinator, game: GameSetup)
+    + setView(view: PlacementViewInterface): void
+    + setOnFinished(onFinished: Runnable): void
+    + initializeBoats(): void
+    + handleGridClick(row: int, col: int): void
+    + toggleOrientation(): void
+    + startGame(): void
+    + getCellState(row: int, col: int): CellState
+    + getCurrentItemName(): String
+    + getCurrentItemSize(): int
+    + isHorizontal(): boolean
+    + getGridSize(): int
+  }
+
+  enum PlacementError {
+    + INVALID_PLACEMENT
+  }
+}
+@enduml
+

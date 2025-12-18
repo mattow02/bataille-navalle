@@ -1,0 +1,21 @@
+@startuml
+Model.Island.IslandItem ..> Model.Player.Player
+Model.Island.IslandItem ..> Model.HitOutcome
+Model.Island.IslandEmpty ..> Model.Player.Player
+Model.Island.IslandEmpty ..> Model.HitOutcome
+Model.Island.IslandEmpty ..> Model.SpecialEffectContext
+Model.Island.BombItem ..> Model.Player.Player
+Model.Island.BombItem ..> Model.HitOutcome
+Model.Island.BombItem ..> Model.SpecialEffectContext
+Model.Island.BombItem ..> Model.Weapons.WeaponType
+Model.Island.SonarItem ..> Model.Player.Player
+Model.Island.SonarItem ..> Model.HitOutcome
+Model.Island.SonarItem ..> Model.SpecialEffectContext
+Model.Island.SonarItem ..> Model.Weapons.WeaponType
+Model.Island.DefaultIslandItemFactory ..> Model.GridEntity
+Model.Island.DefaultIslandItemFactory ..> Model.Trap.TrapFactory
+Model.Island.DefaultIslandItemFactory o-- Model.Island.BombItem
+Model.Island.DefaultIslandItemFactory o-- Model.Island.SonarItem
+Model.Island.DefaultIslandItemFactory o-- Model.Island.IslandEmpty
+@enduml
+

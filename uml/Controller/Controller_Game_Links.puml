@@ -1,0 +1,84 @@
+@startuml
+Controller.Game.BattleFlowController "1" o-- "1" Controller.Core.IGameController : controller
+Controller.Game.BattleFlowController ..> Model.GameObserver
+Controller.Game.BattleFlowController ..> Model.Games.GameObservable
+Controller.Game.BattleFlowController "1" o-- "1" Model.Games.GameReader : gameReader
+Controller.Game.BattleFlowController ..> Model.Weapons.WeaponType
+Controller.Game.BattleFlowController "1" o-- "1" View.Core.BattleViewInterface : battleView
+Controller.Game.BattleFlowController ..> View.Model.WeaponViewModel
+Controller.Game.BattleFlowController "1" o-- "1" Controller.Game.WeaponCommandHandler : weaponHandler
+Controller.Game.BattleFlowController ..> View.Core.BattleViewInterface
+
+Controller.Game.BattleScreenCoordinator "1" o-- "1" Controller.Core.IGameController : controller
+Controller.Game.BattleScreenCoordinator "1" o-- "1" Controller.Game.BattleFlowController : battleFlow
+Controller.Game.BattleScreenCoordinator "1" o-- "1" Controller.Game.WeaponCommandHandler : weaponHandler
+Controller.Game.BattleScreenCoordinator ..> View.BattleViewInterface
+
+Controller.Game.BoardViewModelMapper ..> Model.Map.CellStateInfo
+Controller.Game.BoardViewModelMapper ..> View.Model.BattleInfo
+Controller.Game.BoardViewModelMapper ..> View.Model.CellState
+
+Controller.Game.DefaultNavigationCoordinator "1" ..> "1" Controller.Core.IGameController : controller
+Controller.Game.DefaultNavigationCoordinator "1" ..> "1" Controller.Core.IGameControllerCoordinator : coordinator
+Controller.Game.DefaultNavigationCoordinator "1" ..> "1" Controller.Game.GameViewFactory : viewFactory
+Controller.Game.DefaultNavigationCoordinator "1" ..> "1" Controller.Game.UiExecutor : uiExecutor
+Controller.Game.DefaultNavigationCoordinator "1" *-- "1" Controller.Game.BattleScreenCoordinator : battleCoordinator
+Controller.Game.DefaultNavigationCoordinator "1" ..> "1" Controller.Config.ConfigurationController : configurationController
+Controller.Game.DefaultNavigationCoordinator "1" ..> "1" Controller.Placement.PlacementController : placementController
+Controller.Game.DefaultNavigationCoordinator "1" ..> "1" Model.Games.GameSetup : gameSetup
+Controller.Game.DefaultNavigationCoordinator ..> View.GameView
+Controller.Game.DefaultNavigationCoordinator ..> View.Model.EndGameStats
+Controller.Game.DefaultNavigationCoordinator ..> View.PlacementViewInterface
+
+Controller.Game.DefaultUiLogger "1" o-- "1" View.BattleViewInterface : battleView
+Controller.Game.DefaultUiLogger "1" o-- "1" Controller.Game.UiExecutor : uiExecutor
+
+Controller.Game.GameController "1" ..> "1" Controller.Config.ConfigurationController : configurationController
+Controller.Game.GameController "1" ..> "1" Controller.Placement.PlacementController : placementController
+Controller.Game.GameController "1" *-- "1" Controller.Game.WeaponCommandHandler : weaponHandler
+Controller.Game.GameController "1" *-- "1" Controller.Game.BattleFlowController : battleFlow
+Controller.Game.GameController "1" o-- "1" Controller.Game.UiLogger : uiLogger
+Controller.Game.GameController "1" *-- "1" Controller.Game.NavigationCoordinator : navigation
+Controller.Game.GameController "1" *-- "1" Controller.Game.BoardViewModelMapper : mapper
+Controller.Game.GameController "1" ..> "1" Controller.Core.IGameController : selfAsController
+Controller.Game.GameController "1" ..> "1" Controller.Core.IGameControllerCoordinator : selfAsCoordinator
+Controller.Game.GameController "1" ..> "1" Controller.Game.ApplicationLifecycle : lifecycle
+Controller.Game.GameController "1" *-- "1" Controller.Game.DefaultApplicationLifecycle : defaultLifecycle
+Controller.Game.GameController "1" *-- "1" Controller.Game.DefaultUiLogger : defaultUiLogger
+Controller.Game.GameController "1" ..> "1" Model.Coordinates : coordinates
+Controller.Game.GameController "1" ..> "1" Model.GameObserver : observer
+Controller.Game.GameController "1" ..> "1" Model.Games.GameCommander : gameCommander
+Controller.Game.GameController "1" ..> "1" Model.Games.GameConfiguration : gameConfiguration
+Controller.Game.GameController "1" ..> "1" Model.Games.GameObservable : gameObservable
+Controller.Game.GameController "1" ..> "1" Model.Games.GameReader : gameReader
+Controller.Game.GameController "1" ..> "1" Model.Games.GameSetup : gameSetup
+Controller.Game.GameController "1" ..> "1" Model.Games.IGame : game
+Controller.Game.GameController "1" ..> "1" Model.HitOutcome : hitOutcome
+Controller.Game.GameController "1" ..> "1" Model.Weapons.Weapon : weapon
+Controller.Game.GameController "1" ..> "1" Model.Weapons.WeaponFactory : weaponFactory
+Controller.Game.GameController "1" ..> "1" Model.Weapons.WeaponResult : weaponResult
+Controller.Game.GameController "1" ..> "1" Model.Weapons.WeaponSelectionService : weaponSelectionService
+Controller.Game.GameController "1" ..> "1" Model.Weapons.WeaponType : weaponType
+Controller.Game.GameController "1" ..> "1" View.Model.CellState : cellState
+Controller.Game.GameController "1" ..> "1" View.Model.EndGameStats : endGameStats
+Controller.Game.GameController "1" ..> "1" View.Model.BattleInfo : battleInfo
+Controller.Game.GameController "1" ..> "1" View.Core.BattleViewInterface : battleView
+
+Controller.Game.GameViewFactory "1" ..> "1" Controller.Config.ConfigurationController : configurationController
+Controller.Game.GameViewFactory "1" ..> "1" Controller.Core.IGameController : controller
+Controller.Game.GameViewFactory "1" ..> "1" Controller.Placement.PlacementController : placementController
+Controller.Game.GameViewFactory ..> View.BattleViewInterface
+Controller.Game.GameViewFactory ..> View.GameView
+Controller.Game.GameViewFactory ..> View.Model.EndGameStats
+Controller.Game.GameViewFactory ..> View.PlacementViewInterface
+
+Controller.Game.NavigationCoordinator ..> View.Model.EndGameStats
+
+Controller.Game.WeaponCommandHandler ..> Model.Games.GameReader
+Controller.Game.WeaponCommandHandler ..> Model.Weapons.WeaponSelectionService
+Controller.Game.WeaponCommandHandler ..> Model.Weapons.WeaponType
+
+Controller.Game.DefaultApplicationLifecycle --|> Controller.Game.ApplicationLifecycle
+Controller.Game.DefaultUiLogger --|> Controller.Game.UiLogger
+@enduml
+

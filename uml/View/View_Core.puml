@@ -1,0 +1,27 @@
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+
+package View.Core {
+  interface GameView {
+    + display(): void
+    + close(): void
+  }
+
+  interface BattleViewInterface {
+    + updateGrids(playerStates: CellState[][], enemyStates: CellState[][]): void
+    + updateInfo(info: BattleInfo): void
+    + addLog(message: String): void
+    + showEndGame(stats: EndGameStats): void
+    + renderWeapons(weapons: List<WeaponViewModel>): void
+    + setSelectedWeapon(weaponId: String): void
+  }
+
+  interface PlacementViewInterface {
+    + refreshView(): void
+    + showError(error: PlacementError): void
+    + showPlacementFinished(): void
+  }
+}
+

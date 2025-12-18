@@ -1,0 +1,102 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+package Model.Player {
+  abstract class Player {
+    - ownGrid: Grid
+    - targetGrid: Grid
+    + Player(ownGrid: Grid, targetGrid: Grid)
+    + isDefeated(): boolean
+    + fire(coordinates: Coordinates): HitOutcome
+    + hasAmmo(type: WeaponType): boolean
+    + consumeAmmo(type: WeaponType): void
+    + addAmmo(type: WeaponType): void
+    + getAliveBoatsCount(): int
+    + isSubmarineAlive(): boolean
+  }
+
+  class HumanPlayer {
+    - name: String
+    - ammoByType: Map<WeaponType, Integer>
+    + HumanPlayer(name: String, ownGrid: Grid, targetGrid: Grid)
+    + addBomb(): void
+    + getBombCount(): int
+    + addSonar(): void
+    + getSonarCount(): int
+    + hasAmmo(type: WeaponType): boolean
+    + consumeAmmo(type: WeaponType): void
+    + addAmmo(type: WeaponType): void
+    + fire(coordinates: Coordinates): HitOutcome
+    + getName(): String
+    + isDefeated(): boolean
+  }
+
+  class ComputerPlayer {
+    - shotStrategy: ShotStrategy
+    + ComputerPlayer(ownGrid: Grid, targetGrid: Grid)
+    + fire(coordinates: Coordinates): HitOutcome
+    + chooseNextShot(lastOutcome: HitOutcome): Coordinates
+    + hasAmmo(type: WeaponType): boolean
+    + consumeAmmo(type: WeaponType): void
+    + addAmmo(type: WeaponType): void
+    + setShotStrategy(shotStrategy: ShotStrategy): void
+    + isDefeated(): boolean
+    + notifyShotResult(target: Coordinates, outcome: HitOutcome): void
+  }
+
+  interface ShotStrategy {
+    + getNextShot(targetGrid: Grid, lastOutcome: HitOutcome): Coordinates
+    + notifyShotResult(target: Coordinates, outcome: HitOutcome): void
+  }
+
+  class RandomShotStrategy {
+    + getNextShot(targetGrid: Grid, lastOutcome: HitOutcome): Coordinates
+  }
+
+  class TargetedShotStrategy {
+    - potentialTargets: List<Coordinates>
+    - lastHit: Coordinates
+    - isHunting: boolean
+    + TargetedShotStrategy()
+    + getNextShot(targetGrid: Grid, lastOutcome: HitOutcome): Coordinates
+    + setLastHit(hit: Coordinates): void
+    + notifyShotResult(target: Coordinates, outcome: HitOutcome): void
+  }
+
+  interface ShotStrategyFactory {
+    + createForLevel(computerShotLevel: int): ShotStrategy
+  }
+
+  class LevelBasedShotStrategyFactory {
+    + createForLevel(computerShotLevel: int): ShotStrategy
+  }
+
+  class RegisteredShotStrategyFactory {
+    - registry: Map<Integer, Supplier<ShotStrategy>>
+    + RegisteredShotStrategyFactory()
+    + registerLevel(level: int, supplier: Supplier<ShotStrategy>): void
+    + createForLevel(computerShotLevel: int): ShotStrategy
+  }
+
+  interface PlayerFactory {
+    + createHumanPlayer(name: String, ownGrid: Grid, targetGrid: Grid): HumanPlayer
+    + createComputerPlayer(ownGrid: Grid, targetGrid: Grid): ComputerPlayer
+  }
+
+  class StandardPlayerFactory {
+    + createHumanPlayer(name: String, ownGrid: Grid, targetGrid: Grid): HumanPlayer
+    + createComputerPlayer(ownGrid: Grid, targetGrid: Grid): ComputerPlayer
+  }
+
+  HumanPlayer --|> Player
+  ComputerPlayer --|> Player
+  RandomShotStrategy ..|> ShotStrategy
+  TargetedShotStrategy ..|> ShotStrategy
+  LevelBasedShotStrategyFactory ..|> ShotStrategyFactory
+  RegisteredShotStrategyFactory ..|> ShotStrategyFactory
+  StandardPlayerFactory ..|> PlayerFactory
+}
+@enduml
+

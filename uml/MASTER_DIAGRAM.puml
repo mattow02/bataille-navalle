@@ -1,0 +1,33 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+title "Architecture MVC - Système de Bataille Navale"
+
+' Inclusions
+!include Model/Model.puml
+!include View/View.puml
+!include Controller/Controller.puml
+
+
+' Relations inter-couches
+
+' Controller -> Model
+Controller.Game.GameController --> Model.Games.Game : pilote
+
+' Controller -> View
+Controller.Game.GameController --> View.Screen.SwingViewFactory : utilise
+Controller.Game.BattleFlowController --> View.BattleViewInterface : pilote
+
+' View -> Controller
+View.Screen.BattleView ..> Controller.Core.IGameController : notifie
+View.Screen.PlacementView ..> Controller.Placement.IPlacementController : notifie
+View.Screen.ConfigurationView ..> Controller.Config.IConfigurationController : notifie
+
+' View -> Model (lecture)
+View.Screen.BattleView ..> Model.Map.CellStateInfo : affiche
+View.Screen.BattleView ..> Model.Map.Grid : lit (via DTOs)
+
+@enduml
+

@@ -1,13 +1,14 @@
 package Model.Player;
 
-import Model.Map.Grid;
 import Model.Coordinates;
 import Model.HitOutcome;
-import Model.Boat.Boat;
+import Model.Map.Grid;
+import Model.Weapons.WeaponType;
 
+/** Représente un joueur humain ou IA. */
 public abstract class Player {
-    protected Grid ownGrid;
-    protected Grid targetGrid;
+    private final Grid ownGrid;
+    private final Grid targetGrid;
 
     public Player(Grid ownGrid, Grid targetGrid) {
         this.ownGrid = ownGrid;
@@ -15,49 +16,32 @@ public abstract class Player {
     }
 
     public abstract boolean isDefeated();
+
     public abstract HitOutcome fire(Coordinates coordinates);
 
-    public Grid getOwnGrid() { return ownGrid; }
+    public abstract boolean hasAmmo(WeaponType type);
+
+    public abstract void consumeAmmo(WeaponType type);
+
+    public abstract void addAmmo(WeaponType type);
+
+    protected HitOutcome strikeTarget(Coordinates coordinates) {
+        return targetGrid.strikeCell(coordinates, this);
+    }
+
+    protected Grid getTargetGrid() {
+        return targetGrid;
+    }
 
     protected boolean areAllBoatsSunk() {
-        int gridSize = ownGrid.getSize();
-
-        for (int row = 0; row < gridSize; row++) {
-            for (int col = 0; col < gridSize; col++) {
-                Coordinates cord = new Coordinates(row, col);
-                Model.Map.GridCell cell = ownGrid.getCell(cord);
-
-                if (cell != null && cell.isOccupied()) {
-                    if (cell.getEntity() instanceof Boat boat) {
-                        if (!boat.isSunk()) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        return true;
+        return ownGrid.areAllBoatsSunk();
     }
 
     public int getAliveBoatsCount() {
-        java.util.Set<Model.Boat.Boat> uniqueBoats = new java.util.HashSet<>();
-        int size = ownGrid.getSize();
+        return ownGrid.getAliveBoatsCount();
+    }
 
-        for (int r = 0; r < size; r++) {
-            for (int c = 0; c < size; c++) {
-                Model.Map.GridCell cell = ownGrid.getCell(new Model.Coordinates(r, c));
-                if (cell.isOccupied() && cell.getEntity() instanceof Model.Boat.Boat) {
-                    uniqueBoats.add((Model.Boat.Boat) cell.getEntity());
-                }
-            }
-        }
-
-        int aliveCount = 0;
-        for (Model.Boat.Boat boat : uniqueBoats) {
-            if (!boat.isSunk()) {
-                aliveCount++;
-            }
-        }
-        return aliveCount;
+    public boolean isSubmarineAlive() {
+        return ownGrid.isSubmarineAlive();
     }
 }

@@ -1,0 +1,51 @@
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+
+package View.Model {
+  record BattleInfo {
+    + BattleInfo(turnCount: int, playerAliveBoats: int, enemyAliveBoats: int, bombCount: int, sonarCount: int, hasBomb: boolean, hasSonar: boolean)
+    + turnCount(): int
+    + playerAliveBoats(): int
+    + enemyAliveBoats(): int
+    + bombCount(): int
+    + sonarCount(): int
+    + hasBomb(): boolean
+    + hasSonar(): boolean
+  }
+
+  record BoatTypeViewModel {
+    + BoatTypeViewModel(id: String, name: String, size: int)
+    + id(): String
+    + name(): String
+    + size(): int
+  }
+
+  enum CellState {
+    WATER
+    BOAT
+    HIT
+    MISS
+    SUNK
+    ISLAND
+    EXPLORED
+    ITEM_FOUND
+    TRAP
+  }
+
+  record EndGameStats {
+    + EndGameStats(resultMessage: String, turnCount: int, playerAliveBoats: int, computerAliveBoats: int)
+    + resultMessage(): String
+    + turnCount(): int
+    + playerAliveBoats(): int
+    + computerAliveBoats(): int
+  }
+
+  record WeaponViewModel {
+    + WeaponViewModel(id: String, label: String, enabled: boolean)
+    + id(): String
+    + label(): String
+    + enabled(): boolean
+  }
+}

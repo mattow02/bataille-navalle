@@ -1,0 +1,75 @@
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+
+package View.Screen {
+  class BattleView {
+    - controller: IGameController
+    - gridSize: int
+    - frame: JFrame
+    - playerBattleGrid: BattleGrid
+    - enemyBattleGrid: BattleGrid
+    - infoPanel: InfoPanel
+    - weaponPanel: JPanel
+    - weaponGroup: ButtonGroup
+    - weaponButtons: Map<String, JRadioButton>
+    + BattleView(controller: IGameController, gridSize: int)
+    + display(): void
+    + updateGrids(playerStates: CellState[][], enemyStates: CellState[][]): void
+    + updateInfo(info: BattleInfo): void
+    + addLog(message: String): void
+    + showEndGame(stats: EndGameStats): void
+    + close(): void
+    + renderWeapons(weapons: List<WeaponViewModel>): void
+    + setSelectedWeapon(weaponId: String): void
+  }
+
+  class ConfigurationView {
+    - controller: IConfigurationController
+    - frame: JFrame
+    - boatSpinners: Map<String, JSpinner>
+    - islandModeCheckBox: JCheckBox
+    - easyModeCheckBox: JCheckBox
+    - boatSizes: Map<String, Integer>
+    - counterLabel: JLabel
+    + ConfigurationView(controller: IConfigurationController)
+    + display(): void
+  }
+
+  class EndGameView {
+    - stats: EndGameStats
+    - controller: IGameController
+    - frame: JFrame
+    + EndGameView(stats: EndGameStats, controller: IGameController)
+    + display(): void
+    + close(): void
+  }
+
+  class PlacementView {
+    - controller: IPlacementController
+    - frame: JFrame
+    - gridCells: GridCell[][]
+    - gridSize: int
+    - statusLabel: JLabel
+    - rotateButton: JButton
+    + PlacementView(controller: IPlacementController)
+    + display(): void
+    + close(): void
+    + showPlacementFinished(): void
+    + showError(error: PlacementError): void
+    + refreshView(): void
+  }
+
+  class SwingUiExecutor {
+    + execute(action: Runnable): void
+  }
+
+  class SwingViewFactory {
+    + createConfigurationView(controller: ConfigurationController): GameView
+    + createPlacementView(controller: PlacementController): PlacementViewInterface
+    + createBattleView(controller: IGameController, gridSize: int): BattleViewInterface
+    + createEndGameView(stats: EndGameStats, controller: IGameController): GameView
+  }
+}
+

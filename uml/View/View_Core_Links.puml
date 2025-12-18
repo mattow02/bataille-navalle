@@ -1,0 +1,8 @@
+View.Core.BattleViewInterface --|> View.Core.GameView
+View.Core.PlacementViewInterface --|> View.Core.GameView
+View.Core.BattleViewInterface ..> View.Model.BattleInfo
+View.Core.BattleViewInterface ..> View.Model.CellState
+View.Core.BattleViewInterface ..> View.Model.EndGameStats
+View.Core.BattleViewInterface ..> View.Model.WeaponViewModel
+View.Core.PlacementViewInterface ..> Controller.Placement.PlacementError
+

@@ -1,0 +1,33 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+package Controller.Config {
+  record ValidationResult {
+    + ValidationResult(isValid: boolean, errorMessage: String, totalCells: int)
+    + isValid(): boolean
+    + errorMessage(): String
+    + totalCells(): int
+    + valid(totalCells: int): ValidationResult
+    + invalid(errorMessage: String, totalCells: int): ValidationResult
+  }
+
+  interface IConfigurationController {
+    + getAvailableBoatTypes(): List<BoatTypeViewModel>
+    + calculateTotalCells(rawBoatCounts: Map<String, Integer>): int
+    + validateConfiguration(rawBoatCounts: Map<String, Integer>): ValidationResult
+    + handleConfigurationComplete(rawBoatCounts: Map<String, Integer>, isIslandMode: boolean, aiLevel: int): void
+  }
+
+  class ConfigurationController <<record>> {
+    + mainController(): IGameControllerCoordinator
+    + getAvailableBoatTypes(): List<BoatTypeViewModel>
+    + calculateTotalCells(rawBoatCounts: Map<String, Integer>): int
+    + validateConfiguration(rawBoatCounts: Map<String, Integer>): IConfigurationController.ValidationResult
+    + handleConfigurationComplete(rawBoatCounts: Map<String, Integer>, isIslandMode: boolean, aiLevel: int): void
+    - toBoatCounts(rawBoatCounts: Map<String, Integer>): Map<BoatType, Integer>
+  }
+}
+@enduml
+

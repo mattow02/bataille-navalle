@@ -1,0 +1,10 @@
+@startuml
+Model.Boat.Boat ..> Model.Coordinates
+Model.Boat.Boat ..> Model.GridEntity
+Model.Boat.Boat ..> Model.HitOutcome
+Model.Boat.Boat ..> Model.Map.Grid
+Model.Boat.Boat ..> Model.Orientation
+Model.Boat.AbstractBoat ..> Model.HitOutcome
+Model.Boat.AbstractBoat ..> Model.Player.Player
+@enduml
+

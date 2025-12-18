@@ -1,0 +1,52 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+package Model.Island {
+  interface IslandItem {
+    + onAcquired(player: Player): HitOutcome
+    + handleImpact(attacker: Player, segmentIndex: int): HitOutcome
+  }
+
+  interface IslandItemFactory {
+    + createIslandItems(): List<GridEntity>
+  }
+
+  class IslandEmpty {
+    + onAcquired(player: Player): HitOutcome
+    + entityType(): String
+    + getDisplayName(): String
+    + size(): int
+    + applySpecialEffect(context: SpecialEffectContext, target: Coordinates, isHumanAttacker: boolean): void
+  }
+
+  class BombItem {
+    + onAcquired(player: Player): HitOutcome
+    + entityType(): String
+    + getDisplayName(): String
+    + size(): int
+    + applySpecialEffect(context: SpecialEffectContext, target: Coordinates, isHumanAttacker: boolean): void
+  }
+
+  class SonarItem {
+    + onAcquired(player: Player): HitOutcome
+    + entityType(): String
+    + getDisplayName(): String
+    + size(): int
+    + applySpecialEffect(context: SpecialEffectContext, target: Coordinates, isHumanAttacker: boolean): void
+  }
+
+  class DefaultIslandItemFactory {
+    - trapFactory: TrapFactory
+    + DefaultIslandItemFactory(trapFactory: TrapFactory)
+    + createIslandItems(): List<GridEntity>
+  }
+
+  IslandEmpty ..|> IslandItem
+  BombItem ..|> IslandItem
+  SonarItem ..|> IslandItem
+  DefaultIslandItemFactory ..|> IslandItemFactory
+}
+@enduml
+

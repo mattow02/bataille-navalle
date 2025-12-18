@@ -1,12 +1,16 @@
 package Model.Player;
 
-import Model.Map.Grid;
 import Model.Coordinates;
 import Model.HitOutcome;
-import java.util.*;
+import Model.Map.Grid;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+/** Stratégie de tir ciblée après un coup au but. */
 public class TargetedShotStrategy implements ShotStrategy {
-    private List<Coordinates> potentialTargets;
+    private final List<Coordinates> potentialTargets;
     private Coordinates lastHit;
     private boolean isHunting;
 
@@ -45,8 +49,8 @@ public class TargetedShotStrategy implements ShotStrategy {
     private Coordinates findNextValidTarget(Grid targetGrid) {
         Iterator<Coordinates> iterator = potentialTargets.iterator();
         while (iterator.hasNext()) {
-            Coordinates target = iterator.next();
-            if (!isCellHit(targetGrid, target)) {
+            var target = iterator.next();
+            if (isCellHit(targetGrid, target)) {
                 iterator.remove();
                 return target;
             } else {
@@ -57,12 +61,12 @@ public class TargetedShotStrategy implements ShotStrategy {
     }
 
     private void addAdjacentTargets(Coordinates hit, Grid targetGrid) {
-        int[][] directions = {{0,1}, {1,0}, {0,-1}, {-1,0}};
+        int[][] directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
         for (int[] dir : directions) {
-            Coordinates adjacent = new Coordinates(hit.getRow() + dir[0], hit.getColumn() + dir[1]);
+            var adjacent = new Coordinates(hit.row() + dir[0], hit.column() + dir[1]);
             if (isValidTarget(adjacent, targetGrid) &&
-                    !isCellHit(targetGrid, adjacent) &&
+                    isCellHit(targetGrid, adjacent) &&
                     !potentialTargets.contains(adjacent)) {
                 potentialTargets.add(adjacent);
             }
@@ -74,25 +78,32 @@ public class TargetedShotStrategy implements ShotStrategy {
         this.isHunting = true;
     }
 
+    @Override
+    public void notifyShotResult(Coordinates target, HitOutcome outcome) {
+        if (outcome == HitOutcome.HIT || outcome == HitOutcome.SUNK) {
+            setLastHit(target);
+        }
+    }
+
     private Coordinates getRandomShot(Grid targetGrid) {
-        int gridSize = targetGrid.getSize();
-        int attempts = 0;
+        var gridSize = targetGrid.getSize();
+        var attempts = 0;
 
         while (attempts < 100) {
-            int row = (int) (Math.random() * gridSize);
-            int col = (int) (Math.random() * gridSize);
-            Coordinates target = new Coordinates(row, col);
+            var row = (int) (Math.random() * gridSize);
+            var col = (int) (Math.random() * gridSize);
+            var target = new Coordinates(row, col);
 
-            if (!isCellHit(targetGrid, target)) {
+            if (isCellHit(targetGrid, target)) {
                 return target;
             }
             attempts++;
         }
 
-        for (int row = 0; row < gridSize; row++) {
-            for (int col = 0; col < gridSize; col++) {
-                Coordinates target = new Coordinates(row, col);
-                if (!isCellHit(targetGrid, target)) {
+        for (var row = 0; row < gridSize; row++) {
+            for (var col = 0; col < gridSize; col++) {
+                var target = new Coordinates(row, col);
+                if (isCellHit(targetGrid, target)) {
                     return target;
                 }
             }
@@ -101,20 +112,12 @@ public class TargetedShotStrategy implements ShotStrategy {
         return new Coordinates(0, 0);
     }
 
-    private boolean isValidTarget(Coordinates coord, Grid targetGrid) {
-        return coord.isValid(targetGrid.getSize());
+    private boolean isValidTarget(Coordinates cord, Grid targetGrid) {
+        return cord.isValid(targetGrid.getSize());
     }
 
-    private boolean isCellHit(Grid targetGrid, Coordinates coord) {
-        if (!isValidTarget(coord, targetGrid)) {
-            return true;
-        }
-
-        Model.Map.GridCell cell = targetGrid.getCell(coord);
-        if (cell == null) {
-            return true;
-        }
-
-        return cell.isHit();
+    private boolean isCellHit(Grid targetGrid, Coordinates cord) {
+        if (!isValidTarget(cord, targetGrid)) return false;
+        return !targetGrid.isCellHit(cord);
     }
 }

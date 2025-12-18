@@ -2,19 +2,15 @@ package Model.Island;
 
 import Model.HitOutcome;
 import Model.Player.Player;
-import Model.Coordinates;
-import Model.GridEntity;
+import Model.SpecialEffectContext;
+import Model.SpecialEffectEntity;
 
-public class IslandEmpty implements IslandItem {
+/** Case d'île vide sans effet. */
+public class IslandEmpty implements IslandItem, SpecialEffectEntity {
 
     @Override
     public HitOutcome onAcquired(Player player) {
         return HitOutcome.MISS;
-    }
-
-
-    public HitOutcome handleImpact(Player attacker, Coordinates coordinates) {
-        return onAcquired(attacker);
     }
 
     @Override
@@ -23,7 +19,16 @@ public class IslandEmpty implements IslandItem {
     }
 
     @Override
+    public String getDisplayName() {
+        return "Zone Explorée";
+    }
+
+    @Override
     public int size() {
         return 1;
+    }
+
+    @Override
+    public void applySpecialEffect(SpecialEffectContext context, Model.Coordinates target, boolean isHumanAttacker) {
     }
 }

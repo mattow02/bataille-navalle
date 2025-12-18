@@ -1,0 +1,23 @@
+@startuml
+Model.Weapons.Weapon ..> Model.Player.Player
+Model.Weapons.Weapon ..> Model.Map.Grid
+Model.Weapons.Weapon ..> Model.Coordinates
+Model.Weapons.WeaponSelectionService ..> Model.Games.GameReader
+Model.Weapons.WeaponSelectionService ..> Model.Weapons.WeaponSelectionStatus
+Model.Weapons.WeaponSelectionRule ..> Model.Games.GameReader
+Model.Weapons.WeaponSelectionResult ..> Model.Weapons.WeaponSelectionStatus
+Model.Weapons.Bomb ..> Model.Player.Player
+Model.Weapons.Bomb ..> Model.Map.Grid
+Model.Weapons.Bomb ..> Model.Coordinates
+Model.Weapons.Bomb ..> Model.HitOutcome
+Model.Weapons.Missile ..> Model.Player.Player
+Model.Weapons.Missile ..> Model.Map.Grid
+Model.Weapons.Missile ..> Model.Coordinates
+Model.Weapons.Missile ..> Model.HitOutcome
+Model.Weapons.Sonar ..> Model.Player.Player
+Model.Weapons.Sonar ..> Model.Map.Grid
+Model.Weapons.Sonar ..> Model.Coordinates
+Model.Weapons.Sonar ..> Model.HitOutcome
+Model.Weapons.WeaponResult ..> Model.HitOutcome
+@enduml
+

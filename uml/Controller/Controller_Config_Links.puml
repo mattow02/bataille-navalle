@@ -1,0 +1,11 @@
+@startuml
+Controller.Config.IConfigurationController ..> View.Model.BoatTypeViewModel
+Controller.Config.ConfigurationController ..> Controller.Core.IGameControllerCoordinator
+Controller.Config.ConfigurationController ..> Model.Boat.BoatType
+Controller.Config.ConfigurationController ..> Model.Games.GameConfiguration
+Controller.Config.ConfigurationController ..> Model.Games.GameConfigValidator
+Controller.Config.ConfigurationController ..> View.Model.BoatTypeViewModel
+Controller.Config.ConfigurationController ..> Controller.Config.ValidationResult
+Controller.Config.IConfigurationController ..> Controller.Config.ValidationResult
+@enduml
+

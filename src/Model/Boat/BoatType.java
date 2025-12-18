@@ -1,5 +1,6 @@
 package Model.Boat;
 
+/** Référence les types de bateaux disponibles. */
 public enum BoatType {
     AIRCRAFT_CARRIER(5, "Porte-avions"),
     CRUISER(4, "Croiseur"),
@@ -7,14 +8,21 @@ public enum BoatType {
     SUBMARINE(3, "Sous-marin"),
     TORPEDO(2, "Torpilleur");
 
-    private int size;
-    private String name;
+    private final int size;
+    private final String name;
 
     BoatType(int size, String name) {
         this.size = size;
         this.name = name;
     }
 
-    public int getSize() { return size; }
-    public String getName() { return name; }
+    /** Retourne la taille en cases. */
+    public int getSize() {
+        return size;
+    }
+
+    /** Retourne le nom affiché. */
+    public String getName() {
+        return name;
+    }
 }

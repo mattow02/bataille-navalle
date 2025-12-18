@@ -1,38 +1,20 @@
 package Model;
 
-import java.util.Objects;
+/** Représente une coordonnée de grille. */
+public record Coordinates(int row, int column) {
 
-public class Coordinates {
-    private final int row;
-    private final int column;
-
-    public Coordinates(int row, int column) {
-        this.row = row;
-        this.column = column;
+    /** Formate la coordonnée pour affichage (ex: A1). */
+    public String toFormattedString() {
+        return (char) ('A' + row) + "" + (column + 1);
     }
-
-    public int getRow() { return row; }
-    public int getColumn() { return column; }
 
     @Override
     public String toString() {
         return "(" + row + ", " + column + ")";
     }
 
+    /** Vérifie si la coordonnée est dans la grille. */
     public boolean isValid(int gridSize) {
         return row >= 0 && row < gridSize && column >= 0 && column < gridSize;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Coordinates that = (Coordinates) o;
-        return row == that.row && column == that.column;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(row, column);
     }
 }

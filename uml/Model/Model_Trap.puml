@@ -1,0 +1,43 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+package Model.Trap {
+  interface TrapFactory {
+    + createBlackHole(): BlackHole
+    + createTornado(): Tornado
+    + createTraps(islandMode: boolean): List<GridEntity>
+  }
+
+  class BlackHole {
+    - size: int
+    - isTriggered: boolean
+    + handleImpact(attacker: Player, segmentIndex: int): HitOutcome
+    + entityType(): String
+    + isDetectableBySonar(): boolean
+    + getDisplayName(): String
+    + size(): int
+    + applySpecialEffect(context: SpecialEffectContext, target: Coordinates, isHumanAttacker: boolean): void
+  }
+
+  class Tornado {
+    - size: int
+    - isTriggered: boolean
+    + handleImpact(attacker: Player, segmentIndex: int): HitOutcome
+    + entityType(): String
+    + getDisplayName(): String
+    + size(): int
+    + applySpecialEffect(context: SpecialEffectContext, target: Coordinates, isHumanAttacker: boolean): void
+  }
+
+  class DefaultTrapFactory {
+    + createBlackHole(): BlackHole
+    + createTornado(): Tornado
+    + createTraps(islandMode: boolean): List<GridEntity>
+  }
+
+  DefaultTrapFactory ..|> TrapFactory
+}
+@enduml
+

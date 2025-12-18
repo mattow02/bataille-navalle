@@ -1,0 +1,150 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+hide enum methods
+package Controller.Game {
+  interface ApplicationLifecycle {
+    + quit(): void
+  }
+
+  class BattleFlowController {
+    - game: GameReader
+    - observable: GameObservable
+    - viewFactory: GameViewFactory
+    - uiExecutor: UiExecutor
+    - schedulerSupplier: Supplier<ScheduledExecutorService>
+    - scheduler: ScheduledExecutorService
+    - battleView: BattleViewInterface
+    + BattleFlowController(game: GameReader, observable: GameObservable, viewFactory: GameViewFactory, uiExecutor: UiExecutor, schedulerSupplier: Supplier<ScheduledExecutorService>)
+    + showBattleView(controller: IGameController, weaponHandler: WeaponCommandHandler): void
+    + scheduleComputerTurn(computerTurn: Runnable): void
+    + shutdownScheduler(): void
+    + restartScheduler(): void
+    + getBattleView(): BattleViewInterface
+    + buildWeaponViewModels(): List<WeaponViewModel>
+  }
+
+  class BattleScreenCoordinator {
+    - controller: IGameController
+    - battleFlow: BattleFlowController
+    - weaponHandler: WeaponCommandHandler
+    + BattleScreenCoordinator(controller: IGameController, battleFlow: BattleFlowController, weaponHandler: WeaponCommandHandler)
+    + showBattle(): void
+    + closeBattleView(): void
+    + getBattleView(): BattleViewInterface
+  }
+
+  class BoardViewModelMapper {
+    + toCellState(info: CellStateInfo, isPlayerView: boolean): CellState
+    + toBattleInfo(turnCount: int, playerAliveBoats: int, enemyAliveBoats: int, bombCount: int, sonarCount: int, hasBomb: boolean, hasSonar: boolean): BattleInfo
+  }
+
+  class DefaultApplicationLifecycle {
+    + quit(): void
+  }
+
+  class DefaultNavigationCoordinator {
+    - controller: IGameController
+    - coordinator: IGameControllerCoordinator
+    - game: GameSetup
+    - viewFactory: GameViewFactory
+    - uiExecutor: UiExecutor
+    - battleCoordinator: BattleScreenCoordinator
+    - configurationControllerFactory: Function<IGameControllerCoordinator, ConfigurationController>
+    - placementControllerFactory: BiFunction<IGameControllerCoordinator, GameSetup, PlacementController>
+    + DefaultNavigationCoordinator(controller: IGameController, coordinator: IGameControllerCoordinator, game: GameSetup, viewFactory: GameViewFactory, uiExecutor: UiExecutor, battleCoordinator: BattleScreenCoordinator, configurationControllerFactory: Function<IGameControllerCoordinator, ConfigurationController>, placementControllerFactory: BiFunction<IGameControllerCoordinator, GameSetup, PlacementController>)
+    + showConfiguration(): void
+    + startManualPlacement(): void
+    + showBattle(): void
+    + showEndGame(stats: EndGameStats): void
+  }
+
+  class DefaultUiLogger {
+    - battleViewSupplier: Supplier<BattleViewInterface>
+    - uiExecutor: UiExecutor
+    + DefaultUiLogger(battleViewSupplier: Supplier<BattleViewInterface>, uiExecutor: UiExecutor)
+    + log(message: String): void
+  }
+
+  class GameController {
+    - gameReader: GameReader
+    - gameCommander: GameCommander
+    - gameSetup: GameSetup
+    - gameObservable: GameObservable
+    - viewFactory: GameViewFactory
+    - uiExecutor: UiExecutor
+    - weaponProvider: Function<WeaponType, Weapon>
+    - lifecycle: ApplicationLifecycle
+    - weaponHandler: WeaponCommandHandler
+    - battleFlow: BattleFlowController
+    - uiLogger: UiLogger
+    - navigation: NavigationCoordinator
+    - mapper: BoardViewModelMapper
+    + GameController(game: IGame, viewFactory: GameViewFactory, uiExecutor: UiExecutor)
+    + GameController(game: IGame, viewFactory: GameViewFactory, uiExecutor: UiExecutor, weaponProvider: Function<WeaponType, Weapon>)
+    + GameController(gameReader: GameReader, gameCommander: GameCommander, gameSetup: GameSetup, gameObservable: GameObservable, viewFactory: GameViewFactory, uiExecutor: UiExecutor, weaponProvider: Function<WeaponType, Weapon>, schedulerSupplier: Supplier<ScheduledExecutorService>, configurationControllerFactory: Function<IGameControllerCoordinator, ConfigurationController>, placementControllerFactory: BiFunction<IGameControllerCoordinator, GameSetup, PlacementController>, lifecycle: ApplicationLifecycle)
+    + startApplication(): void
+    + handleConfigurationComplete(config: GameConfiguration): void
+    + showBattleView(): void
+    + scheduleComputerTurn(): void
+    + handlePlayerAttack(row: int, col: int): void
+    + selectWeapon(weaponId: String): void
+    + selectWeapon(type: WeaponType): void
+    + log(message: String): void
+    + getTurnCount(): int
+    + getPlayerAliveBoatsCount(): int
+    + getComputerAliveBoatsCount(): int
+    + getPlayerCellState(row: int, col: int): CellState
+    + onGameInitialized(): void
+    + onRefreshRequested(): void
+    + onPlayerTurnEnded(): void
+    + onGameOver(playerWon: boolean, turnCount: int, playerAliveBoats: int, computerAliveBoats: int): void
+    + onWeaponFired(result: WeaponResult): void
+    + onShotResolved(target: Coordinates, outcome: HitOutcome, isHuman: boolean): void
+    + onTornadoEffect(coords: Coordinates): void
+    + onTornadoHit(): void
+    + onBlackHoleTrigger(): void
+    + onBlackHoleBackfire(coords: Coordinates): void
+    + onBlackHoleAbsorbed(coords: Coordinates): void
+    + onItemBombFound(): void
+    + onItemSonarFound(): void
+    + restartApplication(): void
+    + quitApplication(): void
+    + showEndGame(stats: EndGameStats): void
+  }
+
+  interface GameViewFactory {
+    + createConfigurationView(controller: ConfigurationController): GameView
+    + createPlacementView(controller: PlacementController): PlacementViewInterface
+    + createBattleView(controller: IGameController, gridSize: int): BattleViewInterface
+    + createEndGameView(stats: EndGameStats, controller: IGameController): GameView
+  }
+
+  interface NavigationCoordinator {
+    + showConfiguration(): void
+    + startManualPlacement(): void
+    + showBattle(): void
+    + showEndGame(stats: EndGameStats): void
+  }
+
+  interface UiExecutor {
+    + execute(action: Runnable): void
+  }
+
+  interface UiLogger {
+    + log(message: String): void
+  }
+
+  class WeaponCommandHandler {
+    - game: GameReader
+    - selectionService: WeaponSelectionService
+    - currentWeaponType: WeaponType
+    + WeaponCommandHandler(game: GameReader, selectionService: WeaponSelectionService)
+    + select(type: WeaponType): WeaponSelectionService.WeaponSelectionResult
+    + getCurrentWeaponType(): WeaponType
+    + resetToDefault(): void
+  }
+}
+@enduml
+
