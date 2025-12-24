@@ -128,5 +128,6 @@ Implémentation complète et modernisée de la bataille navale en Java 17. L'app
 
 ## 👤 Auteur
 **Matteo** — [@mattow02](https://github.com/mattow02)
+**Halil** - [@Miterra](https://github.com/Miterra).
 
 Projet réalisé pour approfondir la POO, les patterns de conception et la structuration MVC en Java.
